@@ -1,9 +1,9 @@
-defmodule SlackIntegration.Webhook do
+defmodule Integration.Slack.Webhook do
     @moduledoc """
         Integrates with slack by establishing communication with Slack's webhook API
 
         Remember to configure your webhook at config/config.exs:
-            config :plover, SlackIntegration.Webhook, default_url: "https://hooks.slack.com/services/*/*/*"
+            config :plover, Integration.Slack.Webhook, default_url: "https://hooks.slack.com/services/*/*/*"
 
         Credit:
          - Remigiusz Jackowski https://github.com/remiq/slack_webhook
@@ -30,7 +30,7 @@ defmodule SlackIntegration.Webhook do
     def async_send(message, url), do: HTTPoison.post(url, get_content(message), [], [hackney: [:async]])
 
     defp get_hook_url do
-      [default_url: url] =  Application.get_env(:plover, SlackIntegration.Webhook)
+      [default_url: url] =  Application.get_env(:plover, Integration.Slack.Webhook)
       url
     end
     defp get_content(message), do: """

@@ -27,6 +27,12 @@ defmodule PloverWeb.Router do
     get "/:provider/callback", AuthController, :callback
   end
 
+  scope "/github", PloverWeb do
+    pipe_through :api
+
+    post "/webhook", WebhookController, :payload
+  end
+
   # Other scopes may use custom stacks.
   # scope "/api", PloverWeb do
   #   pipe_through :api
