@@ -9,12 +9,6 @@ defmodule PloverWeb.AuthController do
 
 
     def callback(%{assigns: %{ueberauth_auth: auth}} = conn, _params) do
-        %{assigns: assigns } = conn
-        IO.puts "===~=~+~+~+~+~+~+~+~+"
-        IO.inspect auth
-        IO.puts "===~=~+~+~+~+~+~+~+~+"
-        IO.inspect assigns
-        IO.puts "===~=~+~+~+~+~+~+~+~+"
         [first_name, last_name] = extract_name(auth)
         user_params = %{
             first_name: first_name,
@@ -38,7 +32,7 @@ defmodule PloverWeb.AuthController do
             {:ok, user} ->
                 conn
                 |> put_session(:user_id, user.id)
-                |> put_flash(:info, "Successfully logged in (#{user.token})")
+                |> put_flash(:info, "Successfully logged in (#{user.id})")
                 |> redirect(to: page_path(conn, :index))
 
             {:error, _reason} ->
