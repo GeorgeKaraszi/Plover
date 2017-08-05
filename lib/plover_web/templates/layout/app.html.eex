@@ -26,6 +26,7 @@
       <p class="alert alert-danger" role="alert"><%= get_flash(@conn, :error) %></p>
 
       <main role="main">
+        <%= link("Login With Githubs", to: auth_path(@conn, :request, "github")) %> <br>
         <%= render @view_module, @view_template, assigns %>
       </main>
 
