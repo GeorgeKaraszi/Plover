@@ -1,17 +1,28 @@
 defmodule Plover.Application do
+  @moduledoc false
+  alias Mix.Config
+  alias Plover.Repo
+  alias PloverWeb.Endpoint
+
   use Application
 
   # See https://hexdocs.pm/elixir/Application.html
   # for more information on OTP Applications
   def start(_type, _args) do
+    unless Mix.env == :prod do
+      Envy.auto_load
+      # Re-run config for the DOT env files to load envirmental variables
+      "config/config.exs" |> Config.read! |> Config.persist
+    end
+
     import Supervisor.Spec
 
     # Define workers and child supervisors to be supervised
     children = [
       # Start the Ecto repository
-      supervisor(Plover.Repo, []),
+      supervisor(Repo, []),
       # Start the endpoint when the application starts
-      supervisor(PloverWeb.Endpoint, []),
+      supervisor(Endpoint, []),
       # Start your own worker by calling: Plover.Worker.start_link(arg1, arg2, arg3)
       # worker(Plover.Worker, [arg1, arg2, arg3]),
     ]
@@ -25,7 +36,7 @@ defmodule Plover.Application do
   # Tell Phoenix to update the endpoint configuration
   # whenever the application is updated.
   def config_change(changed, _new, removed) do
-    PloverWeb.Endpoint.config_change(changed, removed)
+    Endpoint.config_change(changed, removed)
     :ok
   end
 end
