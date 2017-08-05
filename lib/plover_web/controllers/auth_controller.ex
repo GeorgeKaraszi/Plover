@@ -7,7 +7,6 @@ defmodule PloverWeb.AuthController do
 
     alias Plover.Account
 
-
     def callback(%{assigns: %{ueberauth_auth: auth}} = conn, _params) do
         [first_name, last_name] = extract_name(auth)
         user_params = %{
