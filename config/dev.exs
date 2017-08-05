@@ -37,7 +37,10 @@ config :plover, PloverWeb.Endpoint,
       ~r{priv/static/.*(js|css|png|jpeg|jpg|gif|svg)$},
       ~r{priv/gettext/.*(po)$},
       ~r{lib/plover_web/views/.*(ex)$},
-      ~r{lib/plover_web/templates/.*(eex)$}
+      ~r{lib/plover_web/templates/.*(eex)$},
+      ~r{lib/plover/account/.*(ex)$},
+      ~r{lib/plover/commands/.*(ex)$},
+      ~r{lib/slack_integration/.*(ex)$}
     ]
   ]
 
