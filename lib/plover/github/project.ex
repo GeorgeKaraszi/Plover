@@ -1,0 +1,33 @@
+defmodule Plover.Github.Project do
+  @moduledoc """
+    Github Project schema that will hold data
+    pretaining to the project hosted on Github
+  """
+  use Plover, :model
+  use Plover.Commands.CrudCommands,
+      record_type: Plover.Github.Project,
+      associations: [:github_pull_requests]
+
+  alias Plover.Github.Project
+
+
+  schema "github_projects" do
+    field :name, :string
+    field :url, :string
+    field :organization_name, :string
+    field :organization_url, :string
+
+    has_many :github_pull_requests,
+              Plover.Github.PullRequest,
+              on_delete: :delete_all
+
+    timestamps()
+  end
+
+  @doc false
+  def changeset(%Project{} = project, attrs \\ %{}) do
+    project
+    |> cast(attrs, [:name, :url, :organization_name, :organization_url])
+    |> validate_required([:name, :url])
+  end
+end
