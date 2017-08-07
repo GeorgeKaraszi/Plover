@@ -8,7 +8,6 @@ defmodule Plover.Github.PullRequest do
       record_type: Plover.Github.PullRequest,
       associations: [:github_project, :users]
 
-
   alias Plover.Github.{PullRequest, Project}
   alias Integration.Github.Payload
 
