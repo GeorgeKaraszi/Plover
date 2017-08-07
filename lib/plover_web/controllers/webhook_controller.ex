@@ -4,11 +4,16 @@ defmodule PloverWeb.WebhookController do
   alias Plover.Github
 
   def payload(conn, %{"payload" => payload}) do
+    payload = Poison.decode!(payload)
+
     IO.puts "=-=-=-=-=-=-=-=-=-=-=-=-"
-    payload
-    |> Poison.decode!
-    |> Github.assign_pull_request
-    |> IO.inspect
+    case payload["action"] do
+      "review_requested" ->
+        Github.assign_pull_request(payload)
+      _ ->
+        IO.puts "It is:"
+        IO.inspect payload.action
+    end
 
     # payload
     # |> Poison.decode!

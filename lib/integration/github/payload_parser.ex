@@ -2,7 +2,7 @@ defmodule Integration.Github.PayloadParser do
     @moduledoc """
         Extracts information from a github pull request
     """
-    alias Integration.Github.{PayloadParser, Payload}
+    alias Integration.Github.{Payload}
 
     @doc """
         Returns the Organization's full name
@@ -11,7 +11,7 @@ defmodule Integration.Github.PayloadParser do
             - name if success
             - nil if name is not found
     """
-    def organization_name(%{"organization" => %{"login" => name }}), do: name
+    def organization_name(%{"organization" => %{"login" => name}}), do: name
     def organization_name(_), do: nil
 
     @doc """
@@ -21,7 +21,7 @@ defmodule Integration.Github.PayloadParser do
             - url if success
             - nil if url is not found
     """
-    def organization_url(%{"organization" => %{"url" => url }}), do: url
+    def organization_url(%{"organization" => %{"url" => url}}), do: url
     def organization_url(_), do: nil
     @doc """
         Returns the Projects name
@@ -30,7 +30,7 @@ defmodule Integration.Github.PayloadParser do
             - name if success
             - nil if name is not found
     """
-    def project_name(%{"repository" => %{"full_name" => name }}), do: name
+    def project_name(%{"repository" => %{"full_name" => name}}), do: name
     def project_name(_), do: nil
 
     @doc """
@@ -40,7 +40,7 @@ defmodule Integration.Github.PayloadParser do
             - url if success
             - nil if url is not found
     """
-    def project_url(%{"repository" => %{"html_url" => url }}), do: url
+    def project_url(%{"repository" => %{"html_url" => url}}), do: url
     def project_url(_), do: nil
 
     @doc """
@@ -50,8 +50,7 @@ defmodule Integration.Github.PayloadParser do
             - url if success
             - nil if url is not found
     """
-    def pull_url(%{"pull_request" => pull_request}), do: pull_url(pull_request)
-    def pull_url(%{"url" => url}), do: url
+    def pull_url(%{"pull_request" => %{"url" => url}}), do: url
     def pull_url(_), do: nil
 
     @doc """
@@ -61,8 +60,7 @@ defmodule Integration.Github.PayloadParser do
             - name if success
             - nil if name is not found
     """
-    def pull_name(%{"pull_request" => pull_request}), do: pull_name(pull_request)
-    def pull_name(%{"title" => name}), do: name
+    def pull_name(%{"pull_request" => %{"title" => name}}), do: name
     def pull_name(_), do: nil
 
     @doc """
@@ -72,8 +70,7 @@ defmodule Integration.Github.PayloadParser do
             - status if success
             - nil if name is not found
     """
-    def pull_status(%{"pull_request" => pull_request}), do: pull_name(pull_request)
-    def pull_status(%{"state" => status}), do: status
+    def pull_status(%{"pull_request" => %{"state" => status}}), do: status
     def pull_status(_), do: nil
 
     @doc """

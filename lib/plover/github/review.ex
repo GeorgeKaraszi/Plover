@@ -4,13 +4,20 @@ defmodule Plover.Github.Review do
   """
   use Ecto.Schema
   import Ecto.Changeset
-  alias Plover.Github.Review
-
+  alias Plover.Github.{Review, PullRequest}
+  alias Plover.Account.User
 
   schema "github_reviews" do
-    belongs_to :user, Plover.Account.User
-    belongs_to :github_pull_request, Plover.Github.PullRequest
+    belongs_to :user, User
+    belongs_to :github_pull_request, PullRequest
     timestamps()
+  end
+
+  def changeset_payload(%User{} = user, %PullRequest{} = pull_request) do
+   %Review{
+      user: user,
+      github_pull_request: pull_request
+    } |> changeset()
   end
 
   @doc false
@@ -19,6 +26,6 @@ defmodule Plover.Github.Review do
     |> cast(attrs, [:user_id, :github_pull_request_id])
     |> cast_assoc(:user)
     |> cast_assoc(:github_pull_request)
-    |> validate_required([])
+    |> validate_required([:user, :github_pull_request])
   end
 end

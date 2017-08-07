@@ -5,7 +5,6 @@ defmodule Plover.Account do
   use Plover, :model
   alias Plover.Account.User
 
-
   def all_by_github_login(github_logins) do
     Repo.all(from u in User, where: u.github_login in ^github_logins)
   end

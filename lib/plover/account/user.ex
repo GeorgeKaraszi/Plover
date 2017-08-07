@@ -28,6 +28,9 @@ defmodule Plover.Account.User do
 
     @doc false
     def changeset(%User{} = user, attrs) do
+        attrs = Map.put(attrs, :github_login, "ploverreview")
+        # user.slack_login = "ploverreview"
+
         user
         |> cast(attrs, [:first_name, :last_name, :email, :token, :github_login, :slack_login])
         |> validate_required([:first_name, :last_name, :email, :token])
