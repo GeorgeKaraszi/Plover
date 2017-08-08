@@ -9,7 +9,10 @@ defmodule PloverWeb.WebhookController do
     case payload["action"] do
       "review_requested" ->
         Github.assign_pull_request(payload)
+      "review_request_removed" ->
+        Github.assign_pull_request(payload)
       _ ->
+        IO.puts "unknown action"
     end
 
     conn
