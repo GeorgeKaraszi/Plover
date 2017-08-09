@@ -22,7 +22,7 @@
         # In the latter case `**/*.{ex,exs}` will be used.
       #
         included: ["lib/", "src/", "web/", "apps/"],
-        excluded: [~r"/_build/", ~r"/deps/"]
+        excluded: [~r"/_build/", ~r"/deps/", ~r"/priv/repo/migrations/"]
       },
       #
       # If you create your own checks, you must specify the source files for
@@ -128,7 +128,7 @@
 
         # Controversial and experimental checks (opt-in, just remove `, false`)
         #
-        {Credo.Check.Refactor.ABCSize, false},
+        {Credo.Check.Refactor.ABCSize},
         {Credo.Check.Refactor.AppendSingleItem, false},
         {Credo.Check.Refactor.VariableRebinding, false},
         {Credo.Check.Warning.MapGetUnsafePass, false},

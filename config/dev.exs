@@ -39,8 +39,9 @@ config :plover, PloverWeb.Endpoint,
       ~r{lib/plover_web/views/.*(ex)$},
       ~r{lib/plover_web/templates/.*(eex)$},
       ~r{lib/plover/account/.*(ex)$},
+      ~r{lib/plover/github/.*(ex)$},
       ~r{lib/plover/commands/.*(ex)$},
-      ~r{lib/slack_integration/.*(ex)$}
+      ~r{lib/slack_integration/.*(ex)$},
     ]
   ]
 

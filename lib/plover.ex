@@ -13,7 +13,7 @@ defmodule Plover do
       import Ecto
       import Ecto.Changeset
       import Ecto.Query
-      alias Plover.{Account.User}
+      alias Plover.{Repo}
     end
   end
 
@@ -23,7 +23,7 @@ defmodule Plover do
       import Ecto
       import Ecto.Changeset
       import Ecto.Query
-      alias Plover.{Repo, Account.User}
+      alias Plover.{Repo}
     end
   end
 

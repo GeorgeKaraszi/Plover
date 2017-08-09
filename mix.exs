@@ -1,4 +1,5 @@
 defmodule Plover.Mixfile do
+  @moduledoc false
   use Mix.Project
 
   def project do
@@ -31,7 +32,7 @@ defmodule Plover.Mixfile do
   end
 
   # Specifies which paths to compile per environment.
-  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp elixirc_paths(:test), do: ["lib", "test/support", "test/factories"]
   defp elixirc_paths(_),     do: ["lib"]
 
   # Specifies your project dependencies.
@@ -51,6 +52,8 @@ defmodule Plover.Mixfile do
       {:ueberauth, "~> 0.4"},
       {:ueberauth_github, "~> 0.4"},
       {:ueberauth_facebook, "~> 0.6"},
+      {:ex_machina, "~> 2.0", only: :test},
+      {:faker, "~> 0.8", only: :test},
       {:envy, "~> 1.1.1", only: [:dev, :test]},
       {:credo, "~> 0.8", only: [:dev, :test], runtime: false}
     ]

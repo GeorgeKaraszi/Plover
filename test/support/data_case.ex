@@ -21,6 +21,7 @@ defmodule Plover.DataCase do
       import Ecto
       import Ecto.Changeset
       import Ecto.Query
+      import Plover.Factory
       import Plover.DataCase
     end
   end
