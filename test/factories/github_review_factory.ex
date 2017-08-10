@@ -1,5 +1,7 @@
 defmodule Plover.GitHubReviewFactory do
     @moduledoc false
+
+    alias Plover.Github.{Review, PullRequest}
     defmacro __using__(_opts) do
         quote do
             def github_review_factory do
@@ -7,6 +9,10 @@ defmodule Plover.GitHubReviewFactory do
                     user: build(:user),
                     github_pull_request: build(:github_pull_request)
                 }
+            end
+
+            def with_pull_request(%Review{} = review, %PullRequest{} = pull_request) do
+                %{review | github_pull_request: pull_request}
             end
         end
     end

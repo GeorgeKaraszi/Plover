@@ -9,7 +9,7 @@ defmodule Plover.FunctionalHelper do
         action  = fn -> insert(:user) end
         changed(subject, action, by: 1)
     """
-    def changed(subject, action, by: by) do
+    def expect_to_change(subject, action, by: by) do
         [inital, then] = run_action(subject, action)
         refute then == inital
         assert then == inital + by
@@ -26,10 +26,15 @@ defmodule Plover.FunctionalHelper do
         action  = fn -> insert(:user) end
         changed(subject, action, from: 0, to: 1)
     """
-    def changed(subject, action, from: from, to: to) do
+    def expect_to_change(subject, action, from: from, to: to) do
         [inital, then] = run_action(subject, action)
         assert inital == from
         assert then == to
+    end
+
+    def expect_not_to_change(subject, action) do
+        [inital, then] = run_action(subject, action)
+        assert inital == then
     end
 
     defp run_action(subject, action) do
