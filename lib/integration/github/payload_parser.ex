@@ -10,6 +10,11 @@ defmodule Integration.Github.PayloadParser do
         Returns
             - name if success
             - nil if name is not found
+
+        ## Examples
+        iex> %{"organization" => %{"login" => "org-name"}}
+        iex> |> Integration.Github.PayloadParser.organization_name()
+        "org-name"
     """
     def organization_name(%{"organization" => %{"login" => name}}), do: name
     def organization_name(_), do: nil
@@ -20,15 +25,26 @@ defmodule Integration.Github.PayloadParser do
         Returns
             - url if success
             - nil if url is not found
+
+        ## Examples
+        iex> %{"organization" => %{"url" => "http://google.com"}}
+        iex> |> Integration.Github.PayloadParser.organization_url()
+        "http://google.com"
     """
     def organization_url(%{"organization" => %{"url" => url}}), do: url
     def organization_url(_), do: nil
+
     @doc """
         Returns the Projects name
 
         Returns
             - name if success
             - nil if name is not found
+
+        ## Examples
+        iex> %{"repository" => %{"full_name" => "Test Project"}}
+        iex> |> Integration.Github.PayloadParser.project_name()
+        "Test Project"
     """
     def project_name(%{"repository" => %{"full_name" => name}}), do: name
     def project_name(_), do: nil
@@ -39,6 +55,11 @@ defmodule Integration.Github.PayloadParser do
         Returns
             - url if success
             - nil if url is not found
+
+        ## Examples
+        iex> %{"repository" => %{"html_url" => "Test Project"}}
+        iex> |> Integration.Github.PayloadParser.project_url()
+        "Test Project"
     """
     def project_url(%{"repository" => %{"html_url" => url}}), do: url
     def project_url(_), do: nil
@@ -49,6 +70,11 @@ defmodule Integration.Github.PayloadParser do
         Returns
             - url if success
             - nil if url is not found
+
+        ## Examples
+        iex> %{"pull_request" => %{"url" => "http://my-url.com"}}
+        iex> |> Integration.Github.PayloadParser.pull_url()
+        "http://my-url.com"
     """
     def pull_url(%{"pull_request" => %{"url" => url}}), do: url
     def pull_url(_), do: nil
@@ -59,6 +85,11 @@ defmodule Integration.Github.PayloadParser do
         Returns
             - name if success
             - nil if name is not found
+
+        ## Examples
+        iex> %{"pull_request" => %{"title" => "My Pull Request"}}
+        iex> |> Integration.Github.PayloadParser.pull_name()
+        "My Pull Request"
     """
     def pull_name(%{"pull_request" => %{"title" => name}}), do: name
     def pull_name(_), do: nil
@@ -69,6 +100,11 @@ defmodule Integration.Github.PayloadParser do
         Returns
             - status if success
             - nil if name is not found
+
+        ## Examples
+        iex> %{"pull_request" => %{"state" => "open"}}
+        iex> |> Integration.Github.PayloadParser.pull_status()
+        "open"
     """
     def pull_status(%{"pull_request" => %{"state" => status}}), do: status
     def pull_status(_), do: nil
@@ -78,6 +114,11 @@ defmodule Integration.Github.PayloadParser do
 
         Returns
             - List of login names
+
+        ## Examples
+        iex> %{"requested_reviewers" => [%{"login"=> "User1"}, %{"login"=> "User2"}]}
+        iex> |> Integration.Github.PayloadParser.reviewers()
+        ["User1", "User2"]
     """
     def reviewers(%{"pull_request" => pull_request}), do: reviewers(pull_request)
     def reviewers(%{"requested_reviewers" => reviewers}), do: reviewers(reviewers)
