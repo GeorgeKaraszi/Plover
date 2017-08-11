@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/GeorgeKaraszi/Plover.svg?branch=master)](https://travis-ci.org/GeorgeKaraszi/Plover)
+
 # Starting Up
 
 ## Setting up Environmental Variables
