@@ -14,23 +14,26 @@ defmodule Plover.DataCase do
 
   use ExUnit.CaseTemplate
 
+  alias Ecto.{Changeset, Query, Adapters.SQL.Sandbox}
+
   using do
     quote do
       alias Plover.Repo
 
       import Ecto
-      import Ecto.Changeset
-      import Ecto.Query
+      import Changeset
+      import Query
       import Plover.Factory
       import Plover.DataCase
+      import Plover.FunctionalHelper
     end
   end
 
   setup tags do
-    :ok = Ecto.Adapters.SQL.Sandbox.checkout(Plover.Repo)
+    :ok = Sandbox.checkout(Plover.Repo)
 
     unless tags[:async] do
-      Ecto.Adapters.SQL.Sandbox.mode(Plover.Repo, {:shared, self()})
+      Sandbox.mode(Plover.Repo, {:shared, self()})
     end
 
     :ok

@@ -2,8 +2,11 @@ defmodule Plover.Github.Review do
   @moduledoc """
     An intemediate table that links users and pull request that need reviewing
   """
-  use Ecto.Schema
-  import Ecto.Changeset
+  use Plover, :model
+  use Plover.Commands.CrudCommands,
+      record_type: Plover.Github.Review,
+      associations: [:user, :github_pull_request]
+
   alias Plover.Github.{Review, PullRequest}
   alias Plover.Account.User
 
