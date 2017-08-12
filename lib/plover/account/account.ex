@@ -9,6 +9,13 @@ defmodule Plover.Account do
     Repo.all(from u in User, where: u.github_login in ^github_logins)
   end
 
+    @doc """
+        Returns a list of slack id's from a list of users
+    """
+    def pluck_slack_logins(users) when is_list(users) do
+        Enum.map(users, fn(user) -> user.slack_login end)
+    end
+
   @doc """
     Creates a new user
   """

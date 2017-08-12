@@ -6,7 +6,7 @@ defmodule Plover.Github.Project do
   use Plover, :model
   use Plover.Commands.CrudCommands,
       record_type: Plover.Github.Project,
-      associations: [:github_pull_requests]
+      associations: [pull_requests: :users]
 
   alias Plover.Github.Project
   alias Integration.Github.Payload
@@ -17,7 +17,7 @@ defmodule Plover.Github.Project do
     field :organization_name, :string
     field :organization_url, :string
 
-    has_many :github_pull_requests,
+    has_many :pull_requests,
               Plover.Github.PullRequest,
               on_delete: :delete_all
 

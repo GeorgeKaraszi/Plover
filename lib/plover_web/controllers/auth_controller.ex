@@ -1,11 +1,12 @@
 defmodule PloverWeb.AuthController do
     @moduledoc """
-        Handel's all OAuth connection callbacks from github and facebook.
+        Handel's all OAuth connection callbacks from github.
     """
     use PloverWeb, :controller
     plug Ueberauth
 
     alias Plover.Account
+    alias Ueberauth.Auth.Info
 
     def callback(%{assigns: %{ueberauth_auth: auth}} = conn, _params) do
         [first_name, last_name] = extract_name(auth)
@@ -13,7 +14,8 @@ defmodule PloverWeb.AuthController do
             first_name: first_name,
             last_name: last_name,
             token: auth.credentials.token,
-            email: auth.info.email
+            email: auth.info.email,
+            github_login: auth.info.nickname
         }
 
         signin(conn, user_params)
@@ -41,8 +43,11 @@ defmodule PloverWeb.AuthController do
         end
     end
 
-    defp extract_name(%{info: info}) do
-       users_name = String.split(info.name, " ")
+    defp extract_name(%{info: %Info{name: name}}) when is_nil(name) do
+        ["No", "Name"]
+    end
+    defp extract_name(%{info: %Info{name: name}}) do
+       users_name = String.split(name, " ")
        first_name = List.first(users_name)
        last_name  = if Enum.count(users_name) > 1, do: List.last(users_name), else: nil
        [first_name, last_name]

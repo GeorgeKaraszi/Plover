@@ -27,9 +27,9 @@ defmodule Plover.Account.User do
     end
 
     @doc false
-    def changeset(%User{} = user, attrs) do
+    def changeset(%User{} = user, attrs \\ %{}) do
         user
         |> cast(attrs, [:first_name, :last_name, :email, :token, :github_login, :slack_login])
-        |> validate_required([:first_name, :last_name, :email, :token])
+        |> validate_required([:first_name, :last_name, :email, :token, :github_login])
     end
 end

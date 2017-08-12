@@ -6,7 +6,7 @@ defmodule Plover.Github.PullRequest do
   use Plover, :model
   use Plover.Commands.CrudCommands,
       record_type: Plover.Github.PullRequest,
-      associations: [:github_project, :users]
+      associations: [:users, :project]
 
   alias Plover.Github.{PullRequest, Project}
   alias Integration.Github.Payload
@@ -16,7 +16,7 @@ defmodule Plover.Github.PullRequest do
     field :url, :string
     field :is_open, :boolean
 
-    belongs_to :github_project, Project
+    belongs_to :project, Project
     many_to_many :users, Plover.Account.User, join_through: "github_reviews"
 
     timestamps()
@@ -27,15 +27,15 @@ defmodule Plover.Github.PullRequest do
       name: payload.pull_name,
       url: payload.pull_url,
       is_open: String.contains?(payload.pull_status, "open"),
-      github_project: project
+      project: project
     } |> changeset()
   end
 
   @doc false
   def changeset(%PullRequest{} = pull_request, attrs \\ %{}) do
     pull_request
-    |> cast(attrs, [:url, :is_open, :github_project_id])
-    |> cast_assoc(:github_project)
+    |> cast(attrs, [:url, :is_open, :project_id])
+    |> cast_assoc(:project)
     |> validate_required([:url, :is_open])
   end
 end

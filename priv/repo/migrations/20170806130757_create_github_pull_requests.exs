@@ -8,7 +8,7 @@ defmodule Plover.Repo.Migrations.CreateGithubPullRequests do
       add :name, :string
       add :url, :string
       add :is_open, :boolean
-      add :github_project_id, references(:github_projects, on_delete: :delete_all), null: false
+      add :project_id, references(:github_projects, on_delete: :delete_all), null: false
 
       timestamps()
     end

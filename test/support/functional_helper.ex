@@ -2,6 +2,18 @@ defmodule Plover.FunctionalHelper do
     @moduledoc false
     use ExUnit.CaseTemplate
 
+
+    @doc """
+        Runs assertion checks on the action function to assume an exception is to be risen
+    """
+    def expect_to_raise(exception, action) do
+        assert_raise exception, action
+    end
+
+    def expect_to_raise(exception, action, with: message) do
+        assert_raise exception, message, action
+    end
+
     @doc """
         Runs assertion checks on the subject function before and after the action function is ran
 
