@@ -37,3 +37,4 @@ config :ueberauth, Ueberauth.Strategy.Github.OAuth,
 
 
 config :plover, Integration.Slack.Webhook, default_url: System.get_env("SLACK_WEB_HOOK_URL")
+config :slack, api_token: System.get_env("SLACK_API_TOKEN")

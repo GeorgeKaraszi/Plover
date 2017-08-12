@@ -33,7 +33,7 @@ defmodule Plover.Github.GithubTest do
       user           = insert(:user)
       pull_request   = insert(:github_pull_request)
       payload        = :github_payload |> build() |> with_reviewer(user)
-      insert_list(5, :github_review, github_pull_request: pull_request)
+      insert_list(5, :github_review, pull_request: pull_request)
 
       inital = Review.count
       Github.assign_reviewers(pull_request, payload)
@@ -53,7 +53,7 @@ defmodule Plover.Github.GithubTest do
         :github_payload
         |> build(project_url: "http://google.com")
         |> with_reviewer()
-        |> Github.assign_pull_request()
+        |> Github.assign_pull_request(preload: false)
       end
 
       expect_to_change(subject, action, from: 0, to: 1)
@@ -66,7 +66,7 @@ defmodule Plover.Github.GithubTest do
         :github_payload
         |> build(project_url: "http://google.com", pull_url: "http://google.com/1")
         |> with_reviewer()
-        |> Github.assign_pull_request()
+        |> Github.assign_pull_request(preload: false)
       end
 
       expect_to_change(subject, action, from: 0, to: 1)

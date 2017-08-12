@@ -7,12 +7,12 @@ defmodule Plover.GitHubReviewFactory do
             def github_review_factory do
                 %Plover.Github.Review{
                     user: build(:user),
-                    github_pull_request: build(:github_pull_request)
+                    pull_request: build(:github_pull_request)
                 }
             end
 
             def with_pull_request(%Review{} = review, %PullRequest{} = pull_request) do
-                %{review | github_pull_request: pull_request}
+                %{review | pull_request: pull_request}
             end
         end
     end

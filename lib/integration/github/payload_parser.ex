@@ -72,11 +72,11 @@ defmodule Integration.Github.PayloadParser do
             - nil if url is not found
 
         ## Examples
-        iex> %{"pull_request" => %{"url" => "http://my-url.com"}}
+        iex> %{"pull_request" => %{"html_url" => "http://my-url.com"}}
         iex> |> Integration.Github.PayloadParser.pull_url()
         "http://my-url.com"
     """
-    def pull_url(%{"pull_request" => %{"url" => url}}), do: url
+    def pull_url(%{"pull_request" => %{"html_url" => url}}), do: url
     def pull_url(_), do: nil
 
     @doc """

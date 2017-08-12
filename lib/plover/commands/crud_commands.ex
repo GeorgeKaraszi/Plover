@@ -20,6 +20,8 @@ defmodule Plover.Commands.CrudCommands do
                def update(old_record_id, record) do
                    old_record_id |> find |> changeset(record) |> Repo.update
                 end
+
+              def destroy_all!, do: Repo.delete_all(from r in unquote(record_type))
         end
     end
 end

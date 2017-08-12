@@ -6,4 +6,5 @@ defmodule Plover.Factory do
     use Plover.GitHubPullRequestFactory
     use Plover.GitHubReviewFactory
     use Plover.GithubPayloadFactory
+    use Plover.SlackMessageFactory
 end
