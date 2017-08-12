@@ -104,7 +104,7 @@ defmodule Plover.Slack do
     end
 
     defp format_slack_message(slack_ids, pull_url) do
-        text = " HEY THERE'S A PR REQUEST FOR #{slack_ids} !"
+        text = " HEY THERE'S A PULL REQUEST FOR #{slack_ids} !"
         attachment = [%{
             "title": pull_url,
             "title_link": pull_url,
