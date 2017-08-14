@@ -35,7 +35,8 @@ defmodule PloverWeb.AuthController do
                 |> put_flash(:info, "Successfully logged in (#{user.id})")
                 |> redirect(to: page_path(conn, :index))
 
-            {:error, _reason} ->
+            {:error, reason} ->
+                IO.inspect reason
                 conn
                 |> put_flash(:error, "failed to log in")
                 |> redirect(to: page_path(conn, :index))
