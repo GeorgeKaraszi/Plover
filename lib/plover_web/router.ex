@@ -7,6 +7,7 @@ defmodule PloverWeb.Router do
     plug :fetch_flash
     plug :protect_from_forgery
     plug :put_secure_browser_headers
+    plug PloverWeb.Plugs.SetUser
   end
 
   pipeline :api do
@@ -17,6 +18,7 @@ defmodule PloverWeb.Router do
     pipe_through :browser # Use the default browser stack
 
     get "/", PageController, :index
+    post "/signin", PageController, :signin
   end
 
   scope "/auth", PloverWeb do
@@ -25,6 +27,8 @@ defmodule PloverWeb.Router do
     get "/signout", AuthController, :signout
     get "/:provider", AuthController, :request
     get "/:provider/callback", AuthController, :callback
+
+    resources "/account", AccountController
   end
 
   scope "/github", PloverWeb do
