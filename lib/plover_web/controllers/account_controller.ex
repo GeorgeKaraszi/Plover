@@ -37,10 +37,6 @@ defmodule PloverWeb.AccountController do
         render conn, "edit.html", changeset: changeset
     end
 
-    def delete(conn, params) do
-
-    end
-
     defp required_information?(%Account.User{slack_login: slack, github_login: github}) do
         slack != nil && github != nil
     end
