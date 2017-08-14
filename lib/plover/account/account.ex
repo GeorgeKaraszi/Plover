@@ -9,12 +9,19 @@ defmodule Plover.Account do
     Repo.all(from u in User, where: u.github_login in ^github_logins)
   end
 
-    @doc """
-        Returns a list of slack id's from a list of users
-    """
-    def pluck_slack_logins(users) when is_list(users) do
-        Enum.map(users, fn(user) -> user.slack_login end)
-    end
+  @doc """
+      Returns a list of slack id's from a list of users
+  """
+  def pluck_slack_logins(users) when is_list(users) do
+      Enum.map(users, fn(user) -> user.slack_login end)
+  end
+
+  @doc """
+      Returns a changeset for the givn user
+  """
+  def changeset(user) do
+    User.changeset(user)
+  end
 
   @doc """
     Creates a new user
@@ -32,10 +39,22 @@ defmodule Plover.Account do
   """
   def update_or_insert_user(%{email: email} = user_params) do
     case User.find_by(email: email) do
-        nil ->
-            new_user(user_params)
-        user ->
-            {:ok, user}
+        nil ->  new_user(user_params)
+        user -> update_user(user, user_params)
     end
+  end
+
+  @doc """
+    Will attempt to update the User's Account
+
+    Returns:
+        {:ok, user} if success
+        {:error, changeset} if failed
+  """
+  def update_user(user, params) do
+    user.id
+    |> User.find()
+    |> User.update_changeset(params)
+    |> Repo.update()
   end
 end

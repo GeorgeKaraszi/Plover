@@ -1,0 +1,9 @@
+<div class="user-content">
+    <br/>
+    Github Login: <%= @conn.assigns.user.github_login %></br>
+    Slack UserName: <%= @conn.assigns.user.slack_login %></br></br>
+
+
+    <%= link("Edit Account", to: account_path(@conn, :edit), class: "btn btn-primary btn-lg") %>
+    <%= link("Sign out", to: auth_path(@conn, :signout), class: "btn btn-danger btn-lg") %>
+</div>

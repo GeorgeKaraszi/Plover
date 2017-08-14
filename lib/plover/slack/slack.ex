@@ -6,7 +6,7 @@ defmodule Plover.Slack do
 
     alias Plover.Repo
     alias Plover.Slack.Message
-    alias Slack.Web.{Chat, Channels}
+    alias Slack.Web.{Chat, Channels, Users}
     alias Plover.Commands.ErrorCommands
 
     @doc """
@@ -87,6 +87,25 @@ defmodule Plover.Slack do
             {:ok, message} ->
                 message
         end
+    end
+
+    @doc """
+        Verifies if a use exists on the given slack chat
+    """
+    def user_exists?(_, []), do: false
+    def user_exists?(slack_name, [%{"name" => name} | members]) do
+        slack_name == name || user_exists?(slack_name, members)
+    end
+    def user_exists?(user_name) do
+        user_name = String.trim(user_name)
+        slack_name =
+            if String.starts_with?(user_name, "@") do
+                String.trim_leading(user_name, "@")
+            else
+                user_name
+            end
+        %{"members" => members} = Users.list
+        user_exists?(slack_name, members)
     end
 
     defp get_channel_id!(_, []), do: raise(KeyError, message: "COULD NOT FIND CHANNEL ID!")

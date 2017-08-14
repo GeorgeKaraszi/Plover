@@ -13,6 +13,8 @@
 // to also remove its path from "config.paths.watched".
 import "phoenix_html"
 
+console.log("Yea I can't program CSS for jack shit. Nor do I really care ¯\\_(ツ)_/¯")
+
 // Import local files
 //
 // Local files can be imported directly using relative
