@@ -18,7 +18,7 @@ defmodule PloverWeb.Router do
     pipe_through :browser # Use the default browser stack
 
     get "/", PageController, :index
-    post "/signin", PageController, :signin
+    resources "/account", AccountController, except: [:new], singleton: true
   end
 
   scope "/auth", PloverWeb do
@@ -27,8 +27,6 @@ defmodule PloverWeb.Router do
     get "/signout", AuthController, :signout
     get "/:provider", AuthController, :request
     get "/:provider/callback", AuthController, :callback
-
-    resources "/account", AccountController
   end
 
   scope "/github", PloverWeb do

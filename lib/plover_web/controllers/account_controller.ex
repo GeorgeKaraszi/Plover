@@ -1,26 +1,49 @@
 defmodule PloverWeb.AccountController do
     use PloverWeb, :controller
-    plug PloverWeb.Plugs.RequireSiteAuth
-    plug PloverWeb.Plugs.RequireAuth when action in [:edit, :update, :delete]
+    plug PloverWeb.Plugs.RequireAuth
 
-    def index(conn, _params) do
-        render conn, "index.html"
+    alias Plover.{Account, Slack}
+
+    def show(conn, _params) do
+        if required_information?(conn.assigns.user) do
+            render conn, "show.html"
+        else
+            redirect(conn, to: account_path(conn, :edit))
+        end
     end
 
-    def update(conn, params) do
-
+    def update(conn, %{"user" => params}) do
+        case Account.update_user(conn.assigns.user, params) do
+            {:ok, _user} ->
+                conn
+                |> put_flash(:info, "Successfully registered your slack login")
+                |> redirect(to: account_path(conn, :show))
+            {:error, changeset} ->
+                conn
+                |> put_flash(:error, "There was an error setting up your account")
+                |> render("edit.html", changeset: changeset)
+        end
     end
 
-    def new(conn, params) do
+    def slack_user_check(conn, %{"user" => params}) do
+        %{"slack_login" => slack_login} = params
+        exists = Slack.user_exists?(slack_login)
 
+        conn
+        |> put_status(:ok)
+        |> json(%{exists: exists})
     end
 
-    def edit(conn, params) do
-
+    def edit(conn, _params) do
+        changeset = Account.changeset(conn.assigns.user)
+        render conn, "edit.html", changeset: changeset
     end
 
     def delete(conn, params) do
 
     end
 
+    defp required_information?(%Account.User{slack_login: slack, github_login: github}) do
+        slack != nil && github != nil
+    end
 end

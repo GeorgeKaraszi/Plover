@@ -1,11 +1,2 @@
-	<!-- Header -->
-    <header>
-        <div class="header-content">
-            <div class="header-content-inner">
-            <%= form_for @conn, page_path(@conn, :signin), [as: :password], fn f -> %>
-                    <%= password_input f, :password, placeholder: "Enter Password" %> <br/><br/>
-                    <%= submit "LOGIN BUDDY!", class: "btn btn-primary btn-lg" %>
-            <% end %>
-            </div>
-        </div>
-    </header>
+<%= link("Login With Githubs", to: auth_path(@conn, :request, "github"), class: "btn btn-primary btn-lg") %> <br>
+

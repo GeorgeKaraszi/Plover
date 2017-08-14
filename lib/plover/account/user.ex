@@ -26,10 +26,28 @@ defmodule Plover.Account.User do
         timestamps()
     end
 
+    @insert_requirments ~w(first_name last_name email token github_login)a
+    @update_requirements ~w(slack_login)a
+    @cast_fields @insert_requirments ++ @update_requirements
+
     @doc false
     def changeset(%User{} = user, attrs \\ %{}) do
         user
-        |> cast(attrs, [:first_name, :last_name, :email, :token, :github_login, :slack_login])
-        |> validate_required([:first_name, :last_name, :email, :token, :github_login])
+        |> cast(attrs, @cast_fields)
+        |> shared_changeset()
+    end
+
+    @doc false
+    def update_changeset(%User{} = user, attrs \\ %{}) do
+        user
+        |> cast(attrs, @cast_fields)
+        |> validate_required(@update_requirements)
+        |> shared_changeset
+    end
+
+    @doc false
+    def shared_changeset(changeset) do
+        changeset
+        |> validate_required(@insert_requirments)
     end
 end

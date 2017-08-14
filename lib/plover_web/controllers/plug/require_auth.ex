@@ -18,7 +18,7 @@ defmodule PloverWeb.Plugs.RequireAuth do
         else
             conn
             |> put_flash(:error, "You must sign into your github account!")
-            |> redirect(to: Helpers.account_path(conn, :index))
+            |> redirect(to: Helpers.page_path(conn, :index))
             |> halt()
         end
     end

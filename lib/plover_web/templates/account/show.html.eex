@@ -1,0 +1,6 @@
+<ul>
+    <li>Github Login: <%= @conn.assigns.user.github_login %></li>
+    <li>Slack UserName: <%= @conn.assigns.user.slack_login %></li>
+</ul>
+
+<%= link("Edit Account", to: account_path(@conn, :edit), class: "btn btn-primary btn-lg") %> <br>

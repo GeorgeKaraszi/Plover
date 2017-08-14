@@ -1,0 +1,8 @@
+<%= form_for @changeset, account_path(@conn, :update), fn f -> %>
+     <div class="form-group">
+        <%= text_input f, :slack_login, placeholder: "Slack User Name", autocomplete: "off" %>
+        <%= error_tag f, :slack_login %>
+
+        <%= submit "Submit", class: "btn btn-primary" %>
+    </div>
+<% end %>
