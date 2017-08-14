@@ -1,2 +1,7 @@
-<%= link("Login With Githubs", to: auth_path(@conn, :request, "github"), class: "btn btn-primary btn-lg") %> <br>
+<div class="sign-in">
+    <%= link to: auth_path(@conn, :request, "github"), class: "btn btn-block btn-social btn-microsoft" do %>
+        <span class="fa fa-github"></span>
+        Login with Githubs
+    <% end %>
+</div>
 

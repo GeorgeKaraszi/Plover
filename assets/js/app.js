@@ -12,7 +12,8 @@
 // If you no longer want to use a dependency, remember
 // to also remove its path from "config.paths.watched".
 import "phoenix_html"
-import "./account"
+
+console.log("Yea I can't program CSS for jack shit. Nor do I really care ¯\\_(ツ)_/¯")
 
 // Import local files
 //

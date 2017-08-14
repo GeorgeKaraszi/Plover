@@ -19,9 +19,7 @@ defmodule PloverWeb.AccountController do
                 |> put_flash(:info, "Successfully registered your slack login")
                 |> redirect(to: account_path(conn, :show))
             {:error, changeset} ->
-                conn
-                |> put_flash(:error, "There was an error setting up your account")
-                |> render("edit.html", changeset: changeset)
+                render(conn, "edit.html", changeset: changeset)
         end
     end
 

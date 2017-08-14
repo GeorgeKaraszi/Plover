@@ -7,6 +7,7 @@ defmodule Plover.Account.User do
         associations: []
 
     alias Plover.Account.User
+    alias Plover.Slack
 
     schema "users" do
         field :first_name, :string
@@ -42,12 +43,31 @@ defmodule Plover.Account.User do
         user
         |> cast(attrs, @cast_fields)
         |> validate_required(@update_requirements)
-        |> shared_changeset
+        |> validate_with_slack(:slack_login)
+        |> shared_changeset()
     end
 
     @doc false
     def shared_changeset(changeset) do
-        changeset
-        |> validate_required(@insert_requirments)
+        changeset |> validate_required(@insert_requirments)
+    end
+
+    @doc """
+        Validates the slack name is inputted correctly and it exists on slack
+    """
+    def validate_with_slack(changeset, field, options \\ []) do
+        validate_change(changeset, field, fn _, slack_login ->
+          case String.starts_with?(slack_login, "@") do
+            true -> validate_user_exists(slack_login, field, options)
+            false -> [{field, options[:message] || "Required to start with an @ symbol"}]
+          end
+        end)
+    end
+
+    defp validate_user_exists(slack_login, field, options \\ []) do
+        case Slack.user_exists?(slack_login) do
+            true -> []
+            false -> [{field, options[:message] || "Could not find your name on slack!"}]
+        end
     end
 end
