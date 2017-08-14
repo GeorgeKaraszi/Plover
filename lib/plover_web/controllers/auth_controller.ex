@@ -28,7 +28,7 @@ defmodule PloverWeb.AuthController do
     end
 
     defp signin(conn, changeset) do
-        case Account.update_or_insert_user(changeset) do
+        case Account.find_or_create_user(changeset) do
             {:ok, user} ->
                 conn
                 |> put_session(:user_id, user.id)

@@ -37,10 +37,10 @@ defmodule Plover.Account do
         {:ok, user} if success
         {:error, changeset} if failed
   """
-  def update_or_insert_user(%{email: email} = user_params) do
+  def find_or_create_user(%{email: email} = user_params) do
     case User.find_by(email: email) do
         nil ->  new_user(user_params)
-        user -> update_user(user, user_params)
+        user -> {:ok, user}
     end
   end
 
