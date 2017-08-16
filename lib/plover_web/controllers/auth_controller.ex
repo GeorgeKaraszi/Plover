@@ -22,6 +22,11 @@ defmodule PloverWeb.AuthController do
         signin(conn, user_params)
     end
 
+    def callback(%{assigns: assigns} = conn, _params) do
+        IO.inspect assigns
+        conn |> put_status(:ok) |> json(%{reponse: "YOU WHERE NOT SUPPOSE TO SEE THIS"})
+    end
+
     def signout(conn, _params) do
         conn
         |> configure_session(drop: true)
