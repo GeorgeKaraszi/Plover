@@ -55,7 +55,7 @@ defmodule PloverWeb.AuthController do
     defp extract_name(%{info: %Info{name: name}}) do
        users_name = String.split(name, " ")
        first_name = List.first(users_name)
-       last_name  = if Enum.count(users_name) > 1, do: List.last(users_name), else: nil
+       last_name  = if Enum.count(users_name) > 1, do: List.last(users_name), else: "NO_LAST_NAME"
        [first_name, last_name]
     end
 end
