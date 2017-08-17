@@ -108,8 +108,9 @@ defmodule Plover.Github do
     defp new_reviewers(multi, [], _), do: multi
     defp new_reviewers(multi, [user | users], pull_request) do
         changeset = user |> Review.changeset_payload(pull_request)
+        name = String.to_atom("review_#{user.id}")
         multi
-        |> Multi.insert(:review, changeset)
+        |> Multi.insert(name, changeset)
         |> new_reviewers(users, pull_request)
     end
 
