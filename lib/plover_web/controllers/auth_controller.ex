@@ -2,6 +2,7 @@ defmodule PloverWeb.AuthController do
     @moduledoc """
         Handel's all OAuth connection callbacks from github.
     """
+    require Logger
     use PloverWeb, :controller
     plug Ueberauth
 
@@ -35,7 +36,8 @@ defmodule PloverWeb.AuthController do
                 |> put_flash(:info, "Successfully logged in (#{user.id})")
                 |> redirect(to: page_path(conn, :index))
 
-            {:error, _reason} ->
+            {:error, reason} ->
+                Logger.error inspect(reason)
                 conn
                 |> put_flash(:error, "failed to log in")
                 |> redirect(to: page_path(conn, :index))
@@ -48,7 +50,7 @@ defmodule PloverWeb.AuthController do
     defp extract_name(%{info: %Info{name: name}}) do
        users_name = String.split(name, " ")
        first_name = List.first(users_name)
-       last_name  = if Enum.count(users_name) > 1, do: List.last(users_name), else: nil
+       last_name  = if Enum.count(users_name) > 1, do: List.last(users_name), else: ""
        [first_name, last_name]
     end
 end

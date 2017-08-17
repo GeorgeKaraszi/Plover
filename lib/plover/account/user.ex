@@ -27,7 +27,7 @@ defmodule Plover.Account.User do
         timestamps()
     end
 
-    @insert_requirments ~w(first_name last_name email token github_login)a
+    @insert_requirments ~w(first_name email token github_login)a
     @update_requirements ~w(slack_login)a
     @cast_fields @insert_requirments ++ @update_requirements
 
