@@ -2,6 +2,7 @@ defmodule PloverWeb.AuthController do
     @moduledoc """
         Handel's all OAuth connection callbacks from github.
     """
+    require Logger
     use PloverWeb, :controller
     plug Ueberauth
 
@@ -9,7 +10,6 @@ defmodule PloverWeb.AuthController do
     alias Ueberauth.Auth.Info
 
     def callback(%{assigns: %{ueberauth_auth: auth}} = conn, _params) do
-        IO.inspect auth
         [first_name, last_name] = extract_name(auth)
         user_params = %{
             first_name: first_name,
@@ -20,11 +20,6 @@ defmodule PloverWeb.AuthController do
         }
 
         signin(conn, user_params)
-    end
-
-    def callback(%{assigns: assigns} = conn, _params) do
-        IO.inspect assigns
-        conn |> put_status(:ok) |> json(%{reponse: "YOU WHERE NOT SUPPOSE TO SEE THIS"})
     end
 
     def signout(conn, _params) do
@@ -42,7 +37,7 @@ defmodule PloverWeb.AuthController do
                 |> redirect(to: page_path(conn, :index))
 
             {:error, reason} ->
-                IO.inspect reason
+                Logger.error inspect(reason)
                 conn
                 |> put_flash(:error, "failed to log in")
                 |> redirect(to: page_path(conn, :index))
@@ -55,7 +50,7 @@ defmodule PloverWeb.AuthController do
     defp extract_name(%{info: %Info{name: name}}) do
        users_name = String.split(name, " ")
        first_name = List.first(users_name)
-       last_name  = if Enum.count(users_name) > 1, do: List.last(users_name), else: "NO_LAST_NAME"
+       last_name  = if Enum.count(users_name) > 1, do: List.last(users_name), else: ""
        [first_name, last_name]
     end
 end
