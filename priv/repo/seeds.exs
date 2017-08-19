@@ -9,3 +9,8 @@
 #
 # We recommend using the bang functions (`insert!`, `update!`
 # and so on) as they will fail if something goes wrong.
+
+if Mix.env == :dev do
+    Plover.Factory.insert(:user, github_login: "GeorgeKaraszi", slack_login: "@george")
+    Plover.Factory.insert(:user, github_login: "plover-reviewer-2", slack_login: "@pr_review2")
+end

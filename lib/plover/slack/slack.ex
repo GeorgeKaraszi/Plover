@@ -80,7 +80,7 @@ defmodule Plover.Slack do
     def new_message!(channel_id, pull_url, timestamp) do
         params = %{channel_id: channel_id, pull_url: pull_url, timestamp: timestamp}
         changeset = %Message{} |> Message.changeset(params)
-        case Repo.insert(changeset) do
+        case Repo.insert_or_update(changeset) do
             {:error, changeset} ->
                 message = ErrorCommands.translate_errors(changeset.errors, join_by: " and ")
                 raise(ArgumentError, message: message)

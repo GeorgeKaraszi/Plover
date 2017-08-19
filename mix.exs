@@ -33,6 +33,7 @@ defmodule Plover.Mixfile do
 
   # Specifies which paths to compile per environment.
   defp elixirc_paths(:test), do: ["lib", "test/support", "test/factories"]
+  defp elixirc_paths(:dev),  do: ["lib", "test/support", "test/factories"]
   defp elixirc_paths(_),     do: ["lib"]
 
   # Specifies your project dependencies.
@@ -53,8 +54,8 @@ defmodule Plover.Mixfile do
       {:ueberauth_github, "~> 0.4"},
       {:ueberauth_facebook, "~> 0.6"},
       {:slack, "~> 0.12.0"},
-      {:ex_machina, "~> 2.0", only: :test},
-      {:faker, "~> 0.8", only: :test},
+      {:ex_machina, "~> 2.0", only: [:dev, :test]},
+      {:faker, "~> 0.8", only: [:dev, :test]},
       {:envy, "~> 1.1.1", only: [:dev, :test]},
       {:credo, "~> 0.8", only: [:dev, :test], runtime: false}
     ]
