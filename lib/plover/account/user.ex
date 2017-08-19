@@ -64,7 +64,7 @@ defmodule Plover.Account.User do
         end)
     end
 
-    defp validate_user_exists(slack_login, field, options \\ []) do
+    defp validate_user_exists(slack_login, field, options) do
         case Slack.user_exists?(slack_login) do
             true -> []
             false -> [{field, options[:message] || "Could not find your name on slack!"}]
