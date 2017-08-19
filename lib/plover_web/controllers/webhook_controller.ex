@@ -17,7 +17,7 @@ defmodule PloverWeb.WebhookController do
 
         SlackStack.post_request
       error ->
-        Logger.error inspect(reason)
+        Logger.error inspect(error)
     end
 
     conn |> put_status(:ok) |> json(%{reponse: :ok})
