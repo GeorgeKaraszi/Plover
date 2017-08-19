@@ -7,29 +7,6 @@ defmodule Plover.Github do
     alias Ecto.Multi
 
     @doc """
-        Esablishes links between Projects, Pull Requests and Reviewers
-
-        Returns the pull request
-    """
-    def assign_pull_request(%Payload{} = payload, preload: preload) do
-       {:ok, pull_request} =
-            payload
-            |> find_or_create_project
-            |> find_or_create_pull_request(payload)
-
-       assign_reviewers(pull_request, payload)
-
-       if preload do
-            PullRequest.find(pull_request.id, :preload)
-        else
-            pull_request
-       end
-    end
-    def assign_pull_request(raw_payload, params) do
-       raw_payload |> PayloadParser.request_details() |> assign_pull_request(params)
-    end
-
-    @doc """
         Remove all previous reviewers then replaces them with the new set
     """
     def assign_reviewers({:ok, pull_request}, payload) do

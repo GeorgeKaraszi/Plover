@@ -126,6 +126,35 @@ defmodule Integration.Github.PayloadParser do
     def reviewers([]), do: []
 
     @doc """
+        Returns the state for which the review status has been submitted as
+
+        Returns
+            - Review state
+
+        ## Examples
+        iex> %{"review" => %{"state" => "approved"}}
+        iex> |> Integration.Github.PayloadParser.review_state()
+        "approved"
+    """
+    def review_state(%{"review" => %{"state" => state}}), do: state
+    def review_state(_), do: nil
+
+    @doc """
+        Returns the github login who submitted a review
+
+        Returns
+            - Github login of reviewer
+
+        ## Examples
+        iex> %{"review" => %{"user" => %{"login" => "TestUser"}}}
+        iex> |> Integration.Github.PayloadParser.reviewer()
+        "TestUser"
+    """
+    def reviewer(%{"review" => review}), do: reviewer(review)
+    def reviewer(%{"user" => %{"login" => login}}), do: login
+    def reviewer(_), do: nil
+
+    @doc """
         Returns list of all avaiaible data in a PR
 
         Returns
@@ -141,6 +170,8 @@ defmodule Integration.Github.PayloadParser do
             pull_name: pull_name(payload),
             pull_url: pull_url(payload),
             pull_status: pull_status(payload),
+            review_state: review_state(payload),
+            reviewer: reviewer(payload),
             reviewers: reviewers(payload),
         }
     end

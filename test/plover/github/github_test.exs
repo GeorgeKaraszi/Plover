@@ -2,8 +2,8 @@ defmodule Plover.Github.GithubTest do
     @moduledoc false
   use Plover.DataCase, async: true
 
-  alias Plover.{Github}
-  alias Github.{Review, PullRequest, Project}
+  alias Plover.Github
+  alias Github.Review
 
   describe ".assign_reviewers" do
     test "Works with existing pull request" do
@@ -44,33 +44,5 @@ defmodule Plover.Github.GithubTest do
       assert Review.find_by(user_id: user.id) != nil
     end
 
-  end
-
-  describe ".assign_pull_request" do
-    test "Assigning a pull request creates a new project if one doesn't exist" do
-      subject = fn -> Project.count end
-      action = fn ->
-        :github_payload
-        |> build(project_url: "http://google.com")
-        |> with_reviewer()
-        |> Github.assign_pull_request(preload: false)
-      end
-
-      expect_to_change(subject, action, from: 0, to: 1)
-      expect_not_to_change(subject, action)
-    end
-
-    test "Assigning a pull request creates a new PR if one doesn't exist" do
-      subject = fn -> PullRequest.count end
-      action = fn ->
-        :github_payload
-        |> build(project_url: "http://google.com", pull_url: "http://google.com/1")
-        |> with_reviewer()
-        |> Github.assign_pull_request(preload: false)
-      end
-
-      expect_to_change(subject, action, from: 0, to: 1)
-      expect_not_to_change(subject, action)
-    end
   end
 end
