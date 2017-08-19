@@ -1,17 +1,17 @@
-defmodule Plover.Review.Submitted do
+defmodule Plover.Review.Submited do
     @moduledoc false
 
     alias Integration.Github.{PayloadParser, Payload}
-    alias Plover.Account
+    alias Plover.{Account, Account.User}
 
     def review(%Payload{} = payload) do
         case payload.review_state do
-            "approved" ->
-                {:approved, payload.review}
-            "changes_requested" ->
-                1
+            state when state in ["approved", "changes_requested"] ->
+                reviewers = payload.reviewers |> get_users()
+                reviewer  = payload.review    |> get_user()
+                review_return(state, reviewer, reviewers)
             _ ->
-                2
+                {:error, "unknown review state"}
         end
     end
 
@@ -19,9 +19,16 @@ defmodule Plover.Review.Submitted do
         raw_payload |> PayloadParser.request_details() |> review()
     end
 
-
-    def get_github_ids(payload) do
+    def get_users(reviewers) do
+        Account.all_by_github_login(reviewers)
     end
 
+    def get_user(reviewer) do
+        User.find_by(github_login: reviewer)
+    end
 
+    defp review_return(nil, _), do: {:error, "Could not find reviewer"}
+    defp review_return(action, reviewer, reviewers) do
+        {action, review, reviewers}
+    end
 end

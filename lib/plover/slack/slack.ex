@@ -23,13 +23,13 @@ defmodule Plover.Slack do
           Returns
           - Map type, Slack message response
     """
-    def update_or_create_message!(slack_ids, pull_url, channel_name: channel_name) do
+    def post_review_request!(slack_ids, pull_url, channel_name: channel_name) do
         channel_name
         |> get_channel_id!
-        |> update_or_create_message!(slack_ids, pull_url)
+        |> post_review_request!(slack_ids, pull_url)
     end
 
-    def update_or_create_message!(channel_id, slack_ids, pull_url) do
+    def post_review_request!(channel_id, slack_ids, pull_url) do
         case Message.find_by(pull_url: pull_url, channel_id: channel_id) do
             nil ->
                 response  = post_slack_message(channel_id, pull_url, slack_ids)

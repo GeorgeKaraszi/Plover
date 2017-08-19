@@ -23,8 +23,7 @@ defmodule Plover.Application do
       supervisor(Repo, []),
       # Start the endpoint when the application starts
       supervisor(Endpoint, []),
-      supervisor(Plover.GithubStack, []),
-      supervisor(Plover.SlackStack, [])
+      supervisor(Plover.WebhookStack, []),
       # Start your own worker by calling: Plover.Worker.start_link(arg1, arg2, arg3)
       # worker(Plover.Worker, [arg1, arg2, arg3]),
     ]

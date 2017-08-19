@@ -3,19 +3,16 @@ defmodule PloverWeb.WebhookController do
   use PloverWeb, :controller
 
 
-  alias Plover.{GithubStack, SlackStack}
+  alias Plover.WebhookStack
 
   def payload(conn, %{"payload" => payload}) do
-    payload
-    |> Poison.decode!()
-    |> GithubStack.submit_request()
+    decoded_payload =  Poison.decode!(payload)
 
-    case GithubStack.get_results do
-      {:ok, pull_request} ->
-        {pull_request.users, pull_request.url, System.get_env("SLACK_CHANNEL_NAME")}
-        |> SlackStack.submit_request()
+    WebhookStack.submit_request(decoded_payload, System.get_env("SLACK_CHANNEL_NAME"))
 
-        SlackStack.post_request
+    case WebhookStack.post_results do
+      {:ok, response} ->
+        Logger.info inspect(response)
       error ->
         Logger.error inspect(error)
     end
