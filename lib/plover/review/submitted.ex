@@ -29,6 +29,6 @@ defmodule Plover.Review.Submited do
 
     defp review_return(nil, _), do: {:error, "Could not find reviewer"}
     defp review_return(action, reviewer, reviewers) do
-        {action, review, reviewers}
+        {action, reviewer, reviewers}
     end
 end

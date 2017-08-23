@@ -68,6 +68,7 @@ defmodule Plover.WebhookStack do
         end
       end
 
+      defp submit_to_slack({:error, _message} = data, _, _), do: data
       defp submit_to_slack({action, reviewer, reviewers}, :submited, channel_name) do
         case action do
           "approved" ->

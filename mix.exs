@@ -54,6 +54,7 @@ defmodule Plover.Mixfile do
       {:ueberauth_github, "~> 0.4"},
       {:ueberauth_facebook, "~> 0.6"},
       {:slack, "~> 0.12.0"},
+      { :uuid, "~> 1.1" },
       {:ex_machina, "~> 2.0", only: [:dev, :test]},
       {:faker, "~> 0.8", only: [:dev, :test]},
       {:envy, "~> 1.1.1", only: [:dev, :test]},
