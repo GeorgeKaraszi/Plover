@@ -110,6 +110,21 @@ defmodule Integration.Github.PayloadParser do
     def pull_status(_), do: nil
 
     @doc """
+        returns the pull request owner
+
+        Returns
+            - Github login of the person who initaliszed the pull request
+
+        ## Examples
+        iex> %{"pull_request" => %{"user" => %{"login" => "User1"}}}
+        iex> |> Integration.Github.PayloadParser.pull_owner()
+        "User1"
+    """
+    def pull_owner(%{"pull_request" => pull_request}), do owner(pull_request)
+    def pull_owner(%{"user" => %{"login" => login}}), do: login
+    def pull_owner(_), do: nil
+
+    @doc """
         Returns a list of reviewer login names
 
         Returns
@@ -170,6 +185,7 @@ defmodule Integration.Github.PayloadParser do
             pull_name: pull_name(payload),
             pull_url: pull_url(payload),
             pull_status: pull_status(payload),
+            pull_owner: pull_owner(payload),
             review_state: review_state(payload),
             reviewer: reviewer(payload),
             reviewers: reviewers(payload),

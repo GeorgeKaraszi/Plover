@@ -12,9 +12,11 @@ defmodule Plover.Account do
   @doc """
       Returns a list of slack id's from a list of users
   """
+  def pluck_slack_logins(nil), do: nil
   def pluck_slack_logins(users) when is_list(users) do
       Enum.map(users, fn(user) -> user.slack_login end)
   end
+  def pluck_slack_logins(user), do: user.slack_login
 
   @doc """
       Returns a changeset for the givn user

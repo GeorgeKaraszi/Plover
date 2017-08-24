@@ -8,6 +8,7 @@ defmodule Integration.Github.Payload do
               pull_name: nil,
               pull_url: nil,
               pull_status: nil,
+              pull_owner: nil,
               review_state: nil,
               reviewer: nil,
               reviewers: []

@@ -22,76 +22,50 @@ defmodule Plover.Slack do
           ID and Message Timestamp
 
           Returns
-          - Map type, Slack message response
+          - The message changeset
     """
-    def post_review_request!(slack_ids, pull_url, channel_name: channel_name) do
-        channel_name
-        |> get_channel_id!
-        |> post_review_request!(slack_ids, pull_url)
-    end
-
-    def post_review_request!(channel_id, slack_ids, pull_url) do
-        case Message.find_by(pull_url: pull_url, channel_id: channel_id) do
-            nil ->
-                response  = post_slack_message(channel_id, pull_url, slack_ids)
-                timestamp = Map.fetch!(response, "ts")
-                new_message!(channel_id, pull_url, timestamp)
-                response
-            message ->
-                update_slack_message(channel_id, message.timestamp, pull_url, slack_ids)
-        end
-    end
-
-    def update_to_create(uuid, slack_id, pull_url, channel_id) do
-
-    end
-
-
-
-    def post_to_slack(slack_ids, pull_url, message_type, channel_name: channel_name) do
+    def post_to_slack!(slack_ids, pull_url, message_type, channel_name) do
         channel_id       = get_channel_id!(channel_name)
         slack_id_convert = id_to_string(slack_ids)
-        uuid             = pull_url <> message_type
-        case message_type do
-            "pull_request" ->
-                uuid = uuid |> to_uuid()
-            "approved" ->
-                uuid = uuid |> to_uuid()
-            "changes_requested" ->
-                uuid = uuid <> slack_id_convert |> to_uuid()
-
-            type -> {:error, "unknown message type (#{type})"}
+        uuid             = get_uuid(pull_url, message_type, slack_id_convert)
+        case find_message(uuid) do
+            nil ->
+                message_type
+                |> post_slack_message!(channel_id, pull_url, slack_id_convert)
+                |> Map.fetch!("ts")
+                |> new_message!(uuid, channel_id, pull_url)
+            message ->
+                message_type
+                |> update_slack_message!(message.timestamp, channel_id, pull_url, slack_id_convert)
+                message
         end
     end
 
-    def post!(slack_ids, pull_url, channel_name: channel_name) do
-        channel_name
-        |> get_channel_id!
-        # |> post_approved!(pull_url)
+    @doc """
+        Returns the UUID of a message based on the combination of pull url, message type, and slack ids
+    """
+    def get_uuid(pull_url, message_type, slack_id \\ "") do
+        pull_url <> message_type <> slack_id |> to_uuid()
     end
 
+    @doc """
+        Will find a message based on the UUID and from what time frame it was created
 
-    defp id_to_string(arg) when is_list(arg), do: Enum.join(arg, ", ")
-    defp id_to_string(arg), do: arg
-
-    defp to_uuid(arg), do: UUID.uuid3(:nil, arg)
-
+        Default behavior will locate messages that are 24hr's or less since last created
+    """
     def find_message(uuid, ending_time \\ "-1", format \\ "day") do
-        from(m in Message,
-        where: m.inserted_at >= from_now(^ending_time, ^format),
-        where: m.uuid == ^uuid)
-        |> Repo.one()
+        Repo.one(
+            from m in Message,
+            where: m.inserted_at >= from_now(^ending_time, ^format),
+            where: m.uuid == ^uuid
+        )
     end
 
     @doc """
         Will submit a message to the speicifed slack channel
     """
-    def post_slack_message(channel_id, pull_url, slack_ids) do
-        [title, attachment] =
-            slack_ids
-            |> Enum.join(", ")
-            # |> format_slack_message(pull_url)
-
+    def post_slack_message!(message_type, channel_id, pull_url, slack_id) do
+        [title, attachment] = slack_message!(message_type, slack_id, pull_url)
         Chat.post_message(
             channel_id,
             title,
@@ -102,26 +76,25 @@ defmodule Plover.Slack do
     @doc """
         Will update an existing message on a speicifed slack channel
     """
-    def update_slack_message(channel_id, timestamp, pull_url, slack_ids) do
-        [title, attachments] =
-            slack_ids
-            |> Enum.join(", ")
-            # |> format_slack_message(pull_url)
-
+    def update_slack_message!(message_type, timestamp, channel_id, pull_url, slack_id) do
+        [title, attachment] = slack_message!(message_type, slack_id, pull_url)
         Chat.update(
             channel_id,
             title,
             timestamp,
-            %{link_names: true, parse: :full, attachments: attachments}
+            %{link_names: true, parse: :full, attachments: attachment}
         )
     end
 
     @doc """
         Creates a new message
+
+        iex> Plover.Slack.new_message!(~N[2017-01-08 12:12:12], "good", "abc123", "google.com")
     """
-    def new_message!(channel_id, pull_url, timestamp) do
-        params = %{channel_id: channel_id, pull_url: pull_url, timestamp: timestamp}
-        changeset = %Message{} |> Message.changeset(params)
+    def new_message!(timestamp, uuid, channel_id, pull_url) do
+        params    = %{channel_id: channel_id, pull_url: pull_url, timestamp: timestamp, uuid: uuid}
+        changeset = Message.changeset(%Message{}, params)
+
         case Repo.insert_or_update(changeset) do
             {:error, changeset} ->
                 message = ErrorCommands.translate_errors(changeset.errors, join_by: " and ")
@@ -150,7 +123,10 @@ defmodule Plover.Slack do
         user_exists?(slack_name, members)
     end
 
-    defp get_channel_id!(_, []), do: raise(KeyError, message: "COULD NOT FIND CHANNEL ID!")
+    defp id_to_string(arg) when is_list(arg), do: Enum.join(arg, ", ")
+    defp id_to_string(arg),                 do: arg
+    defp to_uuid(arg),                      do: UUID.uuid3(:nil, arg)
+    defp get_channel_id!(_, []),            do: raise(KeyError, message: "COULD NOT FIND CHANNEL ID!")
     defp get_channel_id!(channel_name, [channel | channels]) do
         %{"name" => name, "id" => id} = channel
         if name == channel_name do
@@ -164,28 +140,31 @@ defmodule Plover.Slack do
         get_channel_id!(channel_name, channels)
     end
 
-    defp pull_request_message(slack_ids, pull_url) do
-        " HEY THERE'S A PULL REQUEST FOR #{slack_ids} !"
-        |> slack_message("Try to review this as soon as you can!", pull_url)
+    defp slack_message!("pull_request", slack_id, pull_url) do
+        " HEY THERE'S A PULL REQUEST FOR #{slack_id} !"
+        |> format_slack_message("Try to review this as soon as you can!", pull_url, "warning")
     end
 
-    defp request_change_message(slack_id, pull_url) do
+    defp slack_message!("changes_requested", slack_id, pull_url) do
         " You've been requested to make some changes #{slack_id} "
-        |> slack_message("You've been requested to make some changes", pull_url)
+        |> format_slack_message("You've been requested to make some changes", pull_url, "danger")
     end
 
-    defp approved_message(slack_id, pull_url) do
+    defp slack_message!("approved", slack_id, pull_url) do
         " You're PR as been fully approved! #{slack_id} "
-        |> slack_message("Merge it in if all requirements have been met!", pull_url)
-
+        |> format_slack_message("Merge it in if all requirements have been met!", pull_url)
     end
 
-    defp slack_message(text, sub_text, pull_url) do
-        attchment = [%{
+    defp slack_message!(type, _, _) do
+        raise(ArgumentError, message: "Do not recognize (#{type}) message type")
+    end
+
+    defp format_slack_message(text, sub_text, pull_url, color \\ "good") do
+        attachment = [%{
             "title": pull_url,
             "title_link": pull_url,
             "text": sub_text,
-            "color": "#36a64f",
+            "color": color,
             "footer": "Plover Webhook Response"
         }] |> Poison.encode!()
 

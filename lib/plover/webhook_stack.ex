@@ -2,7 +2,7 @@ defmodule Plover.WebhookStack do
     @moduledoc false
     use GenServer
     alias Plover.Review.{Assigned, Submited}
-    alias Plover.{Account, Slack}
+    alias Plover.{Account, Slack, Github.PullRequest}
 
       # Client
       def start_link(state \\ []) do
@@ -50,33 +50,25 @@ defmodule Plover.WebhookStack do
           action when action in ["review_requested", "review_request_removed"] ->
             payload
             |> Assigned.review(preload: true)
-            |> submit_to_slack(:review_request, channel_name)
+            |> submit_to_slack(channel_name)
           "submited" ->
             payload
             |> Submited.review()
-            |> submit_to_slack(:submited, channel_name)
+            |> submit_to_slack(channel_name)
           _ ->
             {:error, "undefined action"}
         end
       end
 
-      defp submit_to_slack(pull_request, :review_request, channel_name) do
+      defp submit_to_slack({:error, _message} = data, _), do: data
+      defp submit_to_slack({action, owner, pull_url}, channel_name) do
+        Slack.post_to_slack!(owner, pull_url, action, channel_name)
+      end
+      defp submit_to_slack(%PullRequest{} = pull_request, channel_name) do
         unless Enum.empty?(pull_request.users) do
           pull_request.users
           |> Account.pluck_slack_logins()
-          |> Slack.post_review_request!(pull_request.url, channel_name: channel_name)
-        end
-      end
-
-      defp submit_to_slack({:error, _message} = data, _, _), do: data
-      defp submit_to_slack({action, reviewer, reviewers}, :submited, channel_name) do
-        case action do
-          "approved" ->
-            1
-          "changes_requested" ->
-            2
-            _unknown ->
-              {:error, "unknown action for submit_to_slack"}
+          |> Slack.post_to_slack!(pull_request.url, "pull_request", channel_name)
         end
       end
     end

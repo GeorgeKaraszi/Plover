@@ -3,7 +3,7 @@ defmodule Plover.Github do
     use Plover, :model
     alias Plover.Account
     alias Plover.Github.{Project, PullRequest, Review}
-    alias Integration.Github.{PayloadParser, Payload}
+    alias Integration.Github.Payload
     alias Ecto.Multi
 
     @doc """

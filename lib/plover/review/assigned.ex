@@ -1,5 +1,10 @@
 defmodule Plover.Review.Assigned do
-    @moduledoc false
+    @moduledoc """
+        Parses the requrements for submitting a slack message based on a `review` request.
+
+        All review requests go through a assignment process, which replaces or creates
+        reviewers for a given pull request.
+    """
 
     alias Plover.{Github, Github.PullRequest}
     alias Integration.Github.{PayloadParser, Payload}
@@ -18,9 +23,9 @@ defmodule Plover.Review.Assigned do
         Github.assign_reviewers(pull_request, payload)
 
         if preload do
-             PullRequest.find(pull_request.id, :preload)
-         else
-             pull_request
+            PullRequest.find(pull_request.id, :preload)
+        else
+            pull_request
         end
      end
 

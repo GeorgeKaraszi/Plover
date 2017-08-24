@@ -2,7 +2,6 @@ defmodule PloverWeb.WebhookController do
   require Logger
   use PloverWeb, :controller
 
-
   alias Plover.WebhookStack
 
   def payload(conn, %{"payload" => payload}) do
