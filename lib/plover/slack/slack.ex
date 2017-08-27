@@ -88,8 +88,6 @@ defmodule Plover.Slack do
 
     @doc """
         Creates a new message
-
-        iex> Plover.Slack.new_message!(~N[2017-01-08 12:12:12], "good", "abc123", "google.com")
     """
     def new_message!(timestamp, uuid, channel_id, pull_url) do
         params    = %{channel_id: channel_id, pull_url: pull_url, timestamp: timestamp, uuid: uuid}

@@ -1,6 +1,6 @@
 defmodule Plover.Github do
     @moduledoc false
-    use Plover, :model
+    use Plover, :context
     alias Plover.Account
     alias Plover.Github.{Project, PullRequest, Review}
     alias Integration.Github.Payload
@@ -19,6 +19,8 @@ defmodule Plover.Github do
         payload.reviewers
         |> Account.all_by_github_login()
         |> create_reviewers(pull_request)
+
+        PullRequest.preload(pull_request)
     end
 
     @doc """

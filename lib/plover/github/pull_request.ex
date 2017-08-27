@@ -4,9 +4,6 @@ defmodule Plover.Github.PullRequest do
     pretaining to pending pull requests on a Projects PR
   """
   use Plover, :model
-  use Plover.Commands.CrudCommands,
-      record_type: Plover.Github.PullRequest,
-      associations: [:users, :project]
 
   alias Plover.Github.{PullRequest, Project}
   alias Integration.Github.Payload

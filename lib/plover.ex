@@ -14,6 +14,17 @@ defmodule Plover do
       import Ecto.Changeset
       import Ecto.Query
       alias Plover.{Repo}
+      use Plover.Commands.CrudCommands
+    end
+  end
+
+  def context do
+    quote do
+      use Ecto.Schema
+      import Ecto
+      import Ecto.Changeset
+      import Ecto.Query
+      alias Plover.Repo
     end
   end
 

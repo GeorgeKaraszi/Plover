@@ -120,7 +120,7 @@ defmodule Integration.Github.PayloadParser do
         iex> |> Integration.Github.PayloadParser.pull_owner()
         "User1"
     """
-    def pull_owner(%{"pull_request" => pull_request}), do owner(pull_request)
+    def pull_owner(%{"pull_request" => pull_request}), do: pull_owner(pull_request)
     def pull_owner(%{"user" => %{"login" => login}}), do: login
     def pull_owner(_), do: nil
 

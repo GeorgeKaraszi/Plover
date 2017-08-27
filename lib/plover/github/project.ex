@@ -4,9 +4,6 @@ defmodule Plover.Github.Project do
     pretaining to the project hosted on Github
   """
   use Plover, :model
-  use Plover.Commands.CrudCommands,
-      record_type: Plover.Github.Project,
-      associations: [pull_requests: :users]
 
   alias Plover.Github.Project
   alias Integration.Github.Payload

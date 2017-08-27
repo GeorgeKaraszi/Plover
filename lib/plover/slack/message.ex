@@ -4,9 +4,6 @@ defmodule Plover.Slack.Message do
   """
 
   use Plover, :model
-  use Plover.Commands.CrudCommands,
-      record_type: Plover.Slack.Message,
-      associations: []
 
   alias Plover.Slack.Message
 

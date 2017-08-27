@@ -6,7 +6,7 @@ defmodule Plover.Review.Assigned do
         reviewers for a given pull request.
     """
 
-    alias Plover.{Github, Github.PullRequest}
+    alias Plover.Github
     alias Integration.Github.{PayloadParser, Payload}
 
     @doc """
@@ -14,19 +14,11 @@ defmodule Plover.Review.Assigned do
 
         Returns the pull request
     """
-    def review(%Payload{} = payload, preload: preload) do
-        {:ok, pull_request} =
-             payload
-             |> Github.find_or_create_project()
-             |> Github.find_or_create_pull_request(payload)
-
-        Github.assign_reviewers(pull_request, payload)
-
-        if preload do
-            PullRequest.find(pull_request.id, :preload)
-        else
-            pull_request
-        end
+    def review(%Payload{} = payload) do
+        payload
+        |> Github.find_or_create_project()
+        |> Github.find_or_create_pull_request(payload)
+        |> Github.assign_reviewers(payload)
      end
 
      def review(raw_payload, params) do

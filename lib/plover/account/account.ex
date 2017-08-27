@@ -2,7 +2,7 @@ defmodule Plover.Account do
     @moduledoc """
         A model for creating and managing the User account
     """
-  use Plover, :model
+  use Plover, :context
   alias Plover.Account.User
 
   def all_by_github_login(github_logins) do
