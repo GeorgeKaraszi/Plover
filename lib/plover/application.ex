@@ -13,6 +13,8 @@ defmodule Plover.Application do
       Envy.auto_load
       # Re-run config for the DOT env files to load envirmental variables
       "config/config.exs" |> Config.read! |> Config.persist
+
+      unless Mix.env == :test, do: :observer.start
     end
 
     import Supervisor.Spec
@@ -23,10 +25,12 @@ defmodule Plover.Application do
       supervisor(Repo, []),
       # Start the endpoint when the application starts
       supervisor(Endpoint, []),
-      supervisor(Plover.WebhookStack, []),
+      supervisor(Plover.Github.Supervisor, []),
+      supervisor(Plover.Webhook, []),
       # Start your own worker by calling: Plover.Worker.start_link(arg1, arg2, arg3)
       # worker(Plover.Worker, [arg1, arg2, arg3]),
     ]
+
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options

@@ -21,7 +21,7 @@ defmodule Plover.Review.Assigned do
         |> Github.assign_reviewers(payload)
      end
 
-     def review(raw_payload, params) do
-        raw_payload |> PayloadParser.request_details() |> review(params)
+     def review(raw_payload) do
+        raw_payload |> PayloadParser.request_details() |> review()
      end
 end

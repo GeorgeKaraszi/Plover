@@ -5,14 +5,14 @@ defmodule Plover.Review.AssignTest do
   alias Plover.Review.Assigned
   alias Plover.Github.{PullRequest, Project}
 
-  describe ".review" do
+  describe "review" do
     test "Assigning a pull request creates a new project if one doesn't exist" do
       subject = fn -> Project.count end
       action = fn ->
         :github_payload
         |> build(project_url: "http://google.com")
-        |> with_reviewer()
-        |> Assigned.review(preload: false)
+        |> with_reviewers(1)
+        |> Assigned.review()
       end
 
       expect_to_change(subject, action, from: 0, to: 1)
@@ -24,8 +24,8 @@ defmodule Plover.Review.AssignTest do
       action = fn ->
         :github_payload
         |> build(project_url: "http://google.com", pull_url: "http://google.com/1")
-        |> with_reviewer()
-        |> Assigned.review(preload: false)
+        |> with_reviewers(1)
+        |> Assigned.review()
       end
 
       expect_to_change(subject, action, from: 0, to: 1)

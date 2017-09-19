@@ -1,7 +1,8 @@
 defmodule Integration.Github.Payload do
     @moduledoc false
 
-    defstruct organization_name: nil,
+    defstruct action: nil,
+              organization_name: nil,
               organization_url: nil,
               project_name: nil,
               project_url: nil,
@@ -11,5 +12,6 @@ defmodule Integration.Github.Payload do
               pull_owner: nil,
               review_state: nil,
               reviewer: nil,
-              reviewers: []
+              reviewers: [],
+              requested_reviewer: nil
 end

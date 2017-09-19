@@ -1,74 +1,98 @@
 defmodule Plover.WebhookStack do
     @moduledoc false
     use GenServer
-    alias Plover.Review.{Assigned, Submited}
+    alias Plover.Review.{Assigned, Submitted}
     alias Plover.{Account, Slack, Github.PullRequest}
+    alias Integration.Github.Payload
+
+    require Logger
 
       # Client
       def start_link(state \\ []) do
         GenServer.start_link(__MODULE__, state, name: __MODULE__)
       end
 
-      def init(process) do
-        {:ok, process}
+      # Async Push to the stack
+      def submit_request(%Payload{} = payload, channel_name) do
+        GenServer.cast(__MODULE__, {:submit, payload})
       end
 
-      def submit_request(payload, channel_name) do
-        GenServer.cast(__MODULE__, {:push, {payload, channel_name}})
-      end
-
+      # Sync Pop from the state
       def post_results do
         GenServer.call(__MODULE__, :pop)
       end
 
+      def get_results(payload) do
+        GenServer.call(__MODULE__, {:retrieve, payload})
+      end
+
       # Server (callbacks)
+
+      def init(state) do
+        {:ok, state}
+      end
+
+      def handle_call({:retrieve, payload}, _from, state) do
+        results = payload.pull_url
+        |> get_worker()
+        |> Plover.Github.Worker.submitted_changes(payload)
+
+        {:reply, results, state}
+      end
 
       def handle_call(:pop, _from, []) do
         {:reply, {:error, "empty results"}, []}
       end
 
       def handle_call(:pop, _from, [request | tail]) do
-        results = process_request(request)
-        {:reply, results, tail}
+        # results = process_request(request)
+        {:reply, request, tail}
       end
 
-      def handle_call(request, from, state) do
-        # Call the default implementation from GenServer
-        super(request, from, state)
+      def handle_cast({:push, payload}, state) do
+
+
+        {:noreply, state}
       end
 
-      def handle_cast({:push, item}, state) do
-        {:noreply, [item | state]}
-      end
+      def get_worker(name) do
+        process_name = String.to_atom(name)
 
-      def handle_cast(request, state) do
-        super(request, state)
-      end
-
-      defp process_request({payload, channel_name}) do
-        case payload["action"] do
-          action when action in ["review_requested", "review_request_removed"] ->
-            payload
-            |> Assigned.review(preload: true)
-            |> submit_to_slack(channel_name)
-          "submited" ->
-            payload
-            |> Submited.review()
-            |> submit_to_slack(channel_name)
-          _ ->
-            {:error, "undefined action"}
+        case Process.whereis(process_name) do
+          nil ->
+            Supervisor.start_child(Plover.Github.Supervisor, [[name: process_name]])
+          pid -> pid
         end
       end
 
-      defp submit_to_slack({:error, _message} = data, _), do: data
-      defp submit_to_slack({action, owner, pull_url}, channel_name) do
-        Slack.post_to_slack!(owner, pull_url, action, channel_name)
+
+      defp log_request(worker_name, command) do
+        Logger.info "LOGGED RESULTS: [#{get_worker worker_name}]: #{inspect command}"
       end
-      defp submit_to_slack(%PullRequest{} = pull_request, channel_name) do
-        unless Enum.empty?(pull_request.users) do
-          pull_request.users
-          |> Account.pluck_slack_logins()
-          |> Slack.post_to_slack!(pull_request.url, "pull_request", channel_name)
-        end
-      end
+
+      # defp process_request({"submitted", payload}) do
+      #   Submitted.review(payload)
+      # end
+
+      # defp process_request("review_request_removed", payload) do
+      #   Assigned.review(payload)
+      # end
+
+      # defp process_request("review_requested", payload) do
+      #   Assigned.review(payload)
+      # end
+
+      # defp submit_to_slack({:error, _message} = data, _), do: data
+
+      # defp submit_to_slack({action, owner, pull_url}, channel_name) do
+      #   Slack.post_to_slack!(owner, pull_url, action, channel_name)
+      # end
+
+      # defp submit_to_slack(%PullRequest{} = pull_request, channel_name) do
+      #   unless Enum.empty?(pull_request.users) do
+      #     pull_request.users
+      #     |> Account.pluck_slack_logins()
+      #     |> Slack.post_to_slack!(pull_request.url, "pull_request", channel_name)
+      #   end
+      # end
     end

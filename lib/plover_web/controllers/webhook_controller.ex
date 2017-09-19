@@ -2,24 +2,50 @@ defmodule PloverWeb.WebhookController do
   require Logger
   use PloverWeb, :controller
 
-  alias Plover.WebhookStack
+  alias Plover.{Webhook, Github}
+  alias Integration.Github.PayloadParser
 
-  def payload(conn, %{"payload" => payload}) do
-    decoded_payload =  Poison.decode!(payload)
+  @name __MODULE__ # Assigns the current module name globally
 
-    WebhookStack.submit_request(decoded_payload, System.get_env("SLACK_CHANNEL_NAME"))
+  def payload(conn, %{"payload" => raw_payload}) do
+    payload = parsed_payload(raw_payload)
+    results =
+      payload
+      |> Webhook.find_process()
+      |> Github.Worker.submit_changes(payload)
 
-    case WebhookStack.post_results do
-      {:ok, response} ->
-        Logger.info inspect(response)
+    case results do
+      {:ok, results} ->
+        response = log_response(results)
+        conn |> put_status(:ok) |> json(%{reponse: response})
       error ->
-        Logger.error inspect(error)
+        response = log_response(error, :error)
+        conn |> put_status(:bad_request) |> json(%{reponse: response})
     end
-
-    conn |> put_status(:ok) |> json(%{reponse: :ok})
   end
 
-  def payload(conn, _params) do
-    conn |> put_status(:not_found) |> json(%{reponse: :bad_request})
+  def payload(conn, params) do
+    response = log_response(params, :bad_request)
+
+    conn
+    |> put_status(:bad_request)
+    |> json(%{reponse: response, reason: "Unknown Parameter"})
+  end
+
+  defp parsed_payload(payload), do: payload |> Poison.decode!() |> PayloadParser.request_details()
+
+  defp log_response(response, type \\ :info) do
+    inspected_response = inspect(response)
+
+    case type do
+      :info ->
+        Logger.info "SUCCESS(#{@name}): #{inspected_response}"
+      :bad_request ->
+        Logger.info "UNKNOWN REQUEST(#{@name}): #{inspected_response}"
+      _ ->
+        Logger.error "ERROR(#{@name}): #{inspected_response}"
+    end
+
+    inspected_response
   end
 end

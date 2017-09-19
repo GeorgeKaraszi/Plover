@@ -5,6 +5,21 @@ defmodule Integration.Github.PayloadParser do
     alias Integration.Github.{Payload}
 
     @doc """
+        Returns the action of the supplied payload
+
+        Returns
+            - Action that was found
+
+        ## Examples
+        iex> %{"action" => "submitted"}
+        iex> |> Integration.Github.PayloadParser.action()
+        "submitted"
+    """
+    def action(%{"action" => pr_action}), do: pr_action
+    def action(_), do: nil
+
+
+    @doc """
         Returns the Organization's full name
 
         Returns
@@ -170,6 +185,24 @@ defmodule Integration.Github.PayloadParser do
     def reviewer(_), do: nil
 
     @doc """
+        Returns a single user reviewed based on an isolated action instance
+
+        Ex: Action return was "review_request_removed"
+        The "requested_reviewer" is the response to whome was removed
+
+        Returns
+            - Github login of reviewer
+
+        ## Examples
+        iex> %{"requested_reviewer" => %{"login" => "TestUser"}}
+        iex> |> Integration.Github.PayloadParser.requested_reviewer()
+        "TestUser"
+    """
+    def requested_reviewer(%{"requested_reviewer" = reviewer}), do: requested_reviewer(reviewer)
+    def requested_reviewer(%{"login" => login}), do: login
+    def requested_reviewer(_), do: nil
+
+    @doc """
         Returns list of all avaiaible data in a PR
 
         Returns
@@ -178,6 +211,7 @@ defmodule Integration.Github.PayloadParser do
     """
     def request_details(payload) do
         %Payload{
+            action: action(payload),
             organization_name: organization_name(payload),
             organization_url: organization_url(payload),
             project_name: project_name(payload),
@@ -189,6 +223,7 @@ defmodule Integration.Github.PayloadParser do
             review_state: review_state(payload),
             reviewer: reviewer(payload),
             reviewers: reviewers(payload),
+            requested_reviewer: requested_reviewer(payload),
         }
     end
 end

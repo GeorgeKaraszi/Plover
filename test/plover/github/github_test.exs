@@ -5,11 +5,11 @@ defmodule Plover.Github.GithubTest do
   alias Plover.Github
   alias Github.Review
 
-  describe ".assign_reviewers" do
+  describe "assign_reviewers" do
     test "Works with existing pull request" do
       subject  = fn -> Review.count end
       action   = fn ->
-          payload = :github_payload |> build() |> with_reviewer()
+          payload = :github_payload |> build() |> with_reviewers(1)
           :github_pull_request
           |> insert()
           |> Github.assign_reviewers(payload)
@@ -21,7 +21,7 @@ defmodule Plover.Github.GithubTest do
     test "Works with newly created pull request" do
       subject = fn -> Review.count end
       action  = fn ->
-          payload = :github_payload |> build() |> with_reviewer()
+          payload = :github_payload |> build() |> with_reviewers(1)
           {:ok, insert(:github_pull_request)}
           |> Github.assign_reviewers(payload)
       end
@@ -32,7 +32,7 @@ defmodule Plover.Github.GithubTest do
     test "Assigning reviews removes old ones" do
       user           = insert(:user)
       pull_request   = insert(:github_pull_request)
-      payload        = :github_payload |> build() |> with_reviewer(user)
+      payload        = :github_payload |> build() |> with_reviewers([user])
       insert_list(5, :github_review, pull_request: pull_request)
 
       inital = Review.count

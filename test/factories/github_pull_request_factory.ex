@@ -7,7 +7,6 @@ defmodule Plover.GitHubPullRequestFactory do
                 %Plover.Github.PullRequest{
                     name: Company.bullshit,
                     url: Internet.url,
-                    is_open: true,
                     project: build(:github_project),
                 }
             end

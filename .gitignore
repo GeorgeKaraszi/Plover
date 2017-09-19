@@ -7,6 +7,8 @@
 .env.dev
 .env.test
 
+/cover
+
 /tmp
 .vscode
 

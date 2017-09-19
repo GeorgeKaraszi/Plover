@@ -13,7 +13,7 @@ defmodule Plover.Commands.CrudCommands do
             def find!(record_id),           do: Repo.get!(__MODULE__, record_id)
             def find_by(query),             do: Repo.get_by(__MODULE__ , query)
             def count,                      do: Repo.aggregate(__MODULE__ , :count, :id)
-            def count_by(field \\ :id),     do: Repo.aggregate(__MODULE__ ,:count, field)
+            def count_by(field \\ :id),     do: Repo.aggregate(__MODULE__ , :count, field)
             def order_by_latest,            do: from q in __MODULE__, order_by: [desc: q.inserted_at]
             def delete!(record_id),         do: record_id |> find! |> Repo.delete!
             def destroy_all!,               do: Repo.delete_all(from r in __MODULE__)

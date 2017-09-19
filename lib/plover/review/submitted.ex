@@ -1,4 +1,4 @@
-defmodule Plover.Review.Submited do
+defmodule Plover.Review.Submitted do
     @moduledoc """
         Parses the requrements for submitting a slack message based on a `submit` response from github
     """
@@ -36,7 +36,7 @@ defmodule Plover.Review.Submited do
 
         Example:
         iex> Plover.Factory.insert(:user, github_login: "gitlogin", slack_login: "@slacklogin")
-        iex> Plover.Review.Submited.get_users(["gitlogin"])
+        iex> Plover.Review.Submitted.get_users(["gitlogin"])
         ["@slacklogin"]
     """
     def get_users(reviewers) when is_list(reviewers) do
@@ -50,7 +50,7 @@ defmodule Plover.Review.Submited do
 
         Example:
         iex> Plover.Factory.insert(:user, github_login: "gitlogin", slack_login: "@slacklogin")
-        iex> Plover.Review.Submited.get_user("gitlogin")
+        iex> Plover.Review.Submitted.get_user("gitlogin")
         "@slacklogin"
     """
     def get_user(reviewer) do

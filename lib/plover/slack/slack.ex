@@ -35,8 +35,7 @@ defmodule Plover.Slack do
                 |> Map.fetch!("ts")
                 |> new_message!(uuid, channel_id, pull_url)
             message ->
-                message_type
-                |> update_slack_message!(message.timestamp, channel_id, pull_url, slack_id_convert)
+                update_slack_message!(message_type, message.timestamp, channel_id, pull_url, slack_id_convert)
                 message
         end
     end
@@ -45,7 +44,12 @@ defmodule Plover.Slack do
         Returns the UUID of a message based on the combination of pull url, message type, and slack ids
     """
     def get_uuid(pull_url, message_type, slack_id \\ "") do
-        pull_url <> message_type <> slack_id |> to_uuid()
+        case message_type do
+            action when action in ["approved", "changes_requested"] ->
+                pull_url <> message_type <> slack_id |> to_uuid()
+            _ ->
+                pull_url <> message_type |> to_uuid()
+        end
     end
 
     @doc """
@@ -157,7 +161,7 @@ defmodule Plover.Slack do
         raise(ArgumentError, message: "Do not recognize (#{type}) message type")
     end
 
-    defp format_slack_message(text, sub_text, pull_url, color \\ "good") do
+    defp format_slack_message(title, sub_text, pull_url, color \\ "good") do
         attachment = [%{
             "title": pull_url,
             "title_link": pull_url,
@@ -166,6 +170,6 @@ defmodule Plover.Slack do
             "footer": "Plover Webhook Response"
         }] |> Poison.encode!()
 
-        [text, [attachment]]
+        [title, [attachment]]
     end
 end
