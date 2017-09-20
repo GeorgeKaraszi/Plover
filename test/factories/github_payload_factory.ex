@@ -7,6 +7,7 @@ defmodule Plover.GithubPayloadFactory do
         quote do
             def github_payload_factory do
                 %Payload{
+                    action: Enum.random(["submitted", "requested_review"]),
                     organization_name: Company.bs,
                     organization_url: Internet.url,
                     project_name: Company.bs,
@@ -17,7 +18,8 @@ defmodule Plover.GithubPayloadFactory do
                     pull_owner: nil,
                     review_state: Enum.random(["approved", "changes_requested"]),
                     reviewer: nil,
-                    reviewers: []
+                    reviewers: [],
+                    requested_reviewer: nil,
                 }
             end
 
@@ -28,7 +30,7 @@ defmodule Plover.GithubPayloadFactory do
 
             def with_reviewer(%Payload{} = payload), do: with_reviewer(payload, insert(:user))
             def with_reviewer(%Payload{} = payload, %User{} = user) do
-                %{payload | reviewer: user.github_login}
+                %{payload | reviewer: user.github_login, requested_reviewer: user.github_login}
             end
 
             def with_reviewers(%Payload{} = payload, users) when is_list(users) do

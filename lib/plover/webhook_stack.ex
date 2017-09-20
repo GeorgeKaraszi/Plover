@@ -4,6 +4,7 @@ defmodule Plover.WebhookStack do
     alias Plover.Review.{Assigned, Submitted}
     alias Plover.{Account, Slack, Github.PullRequest}
     alias Integration.Github.Payload
+    alias Plover.Github.Worker
 
     require Logger
 
@@ -34,8 +35,8 @@ defmodule Plover.WebhookStack do
 
       def handle_call({:retrieve, payload}, _from, state) do
         results = payload.pull_url
-        |> get_worker()
-        |> Plover.Github.Worker.submitted_changes(payload)
+                  |> get_worker()
+                  |> Worker.submitted_changes(payload)
 
         {:reply, results, state}
       end

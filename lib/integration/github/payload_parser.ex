@@ -198,7 +198,7 @@ defmodule Integration.Github.PayloadParser do
         iex> |> Integration.Github.PayloadParser.requested_reviewer()
         "TestUser"
     """
-    def requested_reviewer(%{"requested_reviewer" = reviewer}), do: requested_reviewer(reviewer)
+    def requested_reviewer(%{"requested_reviewer" => reviewer}), do: requested_reviewer(reviewer)
     def requested_reviewer(%{"login" => login}), do: login
     def requested_reviewer(_), do: nil
 

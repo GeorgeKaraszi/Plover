@@ -2,7 +2,7 @@ defmodule PloverWeb.WebhookController do
   require Logger
   use PloverWeb, :controller
 
-  alias Plover.{Webhook, Github}
+  alias Plover.{Webhook, Github.Worker}
   alias Integration.Github.PayloadParser
 
   @name __MODULE__ # Assigns the current module name globally
@@ -12,7 +12,7 @@ defmodule PloverWeb.WebhookController do
     results =
       payload
       |> Webhook.find_process()
-      |> Github.Worker.submit_changes(payload)
+      |> Worker.submit_changes(payload)
 
     case results do
       {:ok, results} ->

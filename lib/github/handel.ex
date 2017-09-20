@@ -33,12 +33,30 @@ defmodule Plover.Github.Handel do
     end
 
     @doc """
+       Changes the state of an existing user
+
+       Returns: New state containing the modified user state.
+    """
+    def change_user_state(state, github_login, user_state) do
+        user = List.keyfind(state.reviewers, github_login, 0)
+
+        if user do
+            user = user
+                   |> Tuple.delete_at(2)
+                   |> Tuple.insert_at(2, user_state)
+            %{state | reviewers: List.keyreplace(state.reviewers, github_login, 0, user)}
+        else
+            state
+        end
+    end
+
+    @doc """
        Assigns new reviewers to the given state
 
        Returns: new state with designated list of reviewers
     """
     def assign_reviewers(state, github_logins, user_state) do
-        missed_logins = state
+        new_reviewers = state
                         |> find_missing_logins(github_logins)
                         |> assign_reviewers(user_state)
 
@@ -51,7 +69,7 @@ defmodule Plover.Github.Handel do
        Returns: new state without designated reviewer
     """
     def remove_reviewer(state, nil), do: state
-    def remove_reviewer(state, github_login // "") do
+    def remove_reviewer(state, github_login) do
         %{state | reviewers: List.keydelete(state.reviewers, github_login, 0)}
     end
 
@@ -80,7 +98,7 @@ defmodule Plover.Github.Handel do
     def assign_reviewers(github_logins, user_state) do
         github_logins
         |> Account.all_by_github_login()
-        |> Enum.reduce(fn account -> reviewer(account, user_state) end)
+        |> Enum.map(fn account -> reviewer(account, user_state) end)
     end
 
     defp reviewer(user, user_state) do
@@ -90,5 +108,4 @@ defmodule Plover.Github.Handel do
     defp assign_state(state \\ %State{}, action) do
         %{state | state: [action | state.state]}
     end
-
 end
