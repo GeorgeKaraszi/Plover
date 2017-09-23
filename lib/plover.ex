@@ -13,7 +13,7 @@ defmodule Plover do
       import Ecto
       import Ecto.Changeset
       import Ecto.Query
-      alias Plover.{Repo}
+      alias Plover.Repo
       use Plover.Commands.CrudCommands
     end
   end
@@ -34,7 +34,7 @@ defmodule Plover do
       import Ecto
       import Ecto.Changeset
       import Ecto.Query
-      alias Plover.{Repo}
+      alias Plover.Repo
     end
   end
 

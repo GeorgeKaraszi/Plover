@@ -8,7 +8,7 @@ defmodule Plover.Github.HandelTest do
 
         test "should add existing reviewers to the worker's state" do
             payload = :github_payload |> build() |> with_reviewers(3)
-            state = Handel.assign_reviewers(%State{}, payload.reviewers, "test_state")
+            state = Handel.assign_reviewers(%State{}, ["not found" | payload.reviewers], "test_state")
             assert Enum.count(state.reviewers) == 3
         end
 

@@ -1,7 +1,7 @@
-defmodule Plover.Github.Supervisor do
+defmodule Github.Supervisor do
     @moduledoc false
     use Supervisor
-    alias Plover.Github.State
+    alias Github.{State, Worker}
 
     @name __MODULE__
 
@@ -14,7 +14,7 @@ defmodule Plover.Github.Supervisor do
     """
     def init(state) do
         children = [
-            worker(Plover.Github.Worker, [state], restart: :transient)
+            worker(Worker, [state], restart: :transient)
         ]
 
         supervise(children, strategy: :simple_one_for_one)

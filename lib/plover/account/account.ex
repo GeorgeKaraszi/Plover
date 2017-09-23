@@ -9,6 +9,10 @@ defmodule Plover.Account do
     Repo.all(from u in User, where: u.github_login in ^github_logins)
   end
 
+  def find_by_github(github_login) do
+    User.find_by(github_login: github_login)
+  end
+
   @doc """
       Returns a list of slack id's from a list of users
   """

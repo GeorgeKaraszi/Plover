@@ -1,9 +1,9 @@
-defmodule Plover.Github.Handel do
+defmodule Github.Handel do
     @moduledoc """
         Handels each request that comes through to a Github Worker
     """
     alias Integration.Github.Payload
-    alias Plover.Github.State
+    alias Github.State
     alias Plover.Account
 
     @doc """
@@ -12,7 +12,7 @@ defmodule Plover.Github.Handel do
     def process(payload \\ %Payload{}, state \\ %State{}) do
         payload.action
         |> process_request(payload, state)
-        |> assign_state(payload.action)
+        |> record_action(payload.action)
     end
 
     @doc """
@@ -29,7 +29,7 @@ defmodule Plover.Github.Handel do
     end
 
     def process_request("review_requested", payload, state) do
-        assign_reviewers(state, payload.reviewers, "review_requested")
+        assign_reviewers(state, payload.requested_reviewer, "review_requested")
     end
 
     @doc """
@@ -51,19 +51,6 @@ defmodule Plover.Github.Handel do
     end
 
     @doc """
-       Assigns new reviewers to the given state
-
-       Returns: new state with designated list of reviewers
-    """
-    def assign_reviewers(state, github_logins, user_state) do
-        new_reviewers = state
-                        |> find_missing_logins(github_logins)
-                        |> assign_reviewers(user_state)
-
-        %{state | reviewers: state.reviewers ++ new_reviewers}
-    end
-
-    @doc """
        Removed a user from the reviewer's list
 
        Returns: new state without designated reviewer
@@ -74,38 +61,36 @@ defmodule Plover.Github.Handel do
     end
 
     @doc """
-       Looks for reviewers that have not yet been added to the reviewer's list
+       Performs a database lookup for accounts are not apart of the already establish list of reviewers
 
-       Returns: ["github_login1", "github_login2", ...] or []
+       Returns: nil if exists or not registered
     """
-    def find_missing_logins(_state, []), do: []
-    def find_missing_logins(state, [github_login | tail]) do
+    def find_missing_login(_state, nil), do: nil
+    def find_missing_login(state, github_login) do
         if List.keyfind(state.reviewers, github_login, 0) do
-            find_missing_logins(state, tail)
+            nil
         else
-            [github_login | find_missing_logins(state, tail)]
+            Account.find_by_github(github_login)
         end
     end
 
     @doc """
-        Performs a database lookup for accounts that contain a provided list of github logins
+       Assigns new reviewers to the given state
 
-        Note: If github login is not registered, then the reviewer is not returned!
-
-        Returns: [{:github_login, :slack_login, :user_state}, ...]
+       Returns: new state with designated list of reviewers
     """
-    def assign_reviewers([]), do: []
-    def assign_reviewers(github_logins, user_state) do
-        github_logins
-        |> Account.all_by_github_login()
-        |> Enum.map(fn account -> reviewer(account, user_state) end)
+    def assign_reviewers(_state, nil, _user_state), do: []
+    def assign_reviewers(state, github_login, user_state) do
+        reviewer = state |> find_missing_login(github_login) |> reviewer(user_state)
+        %{state | reviewers: state.reviewers ++ reviewer}
     end
 
+    defp reviewer(nil, _user_state), do: []
     defp reviewer(user, user_state) do
-        {user.github_login, user.slack_login, user_state}
+        [{user.github_login, user.slack_login, user_state}]
     end
 
-    defp assign_state(state \\ %State{}, action) do
-        %{state | state: [action | state.state]}
+    defp record_action(state, action) do
+        %{state | action_history: [action | state.action_history]}
     end
 end

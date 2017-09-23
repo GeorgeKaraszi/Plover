@@ -14,13 +14,6 @@ defmodule Plover.Account.User do
         field :github_login, :string
         field :slack_login, :string
 
-        many_to_many :github_pull_requests,
-                     Plover.Github.PullRequest,
-                     join_through: "github_reviews"
-
-        has_many :github_pull_request_projects,
-                 through: [:github_pull_requests, :project]
-
         timestamps()
     end
 

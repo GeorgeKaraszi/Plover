@@ -1,8 +1,9 @@
-defmodule Plover.Github.Worker do
+defmodule Github.Worker do
     @moduledoc false
     use GenServer
     require Logger
-    alias Plover.Github.{State, Handel}
+    alias Github.{Handel, State}
+    # alias Slack.RealTimeMessenger
 
     def start_link(state \\ %State{}, opts \\ []) do
         state = %{state | pull_request_url: opts[:name]}
@@ -18,7 +19,8 @@ defmodule Plover.Github.Worker do
     """
     def submit_changes({:ok, pid}, payload), do: submit_changes(pid, payload)
     def submit_changes(pid, payload) do
-        GenServer.call(pid, {:change, payload})
+        GenServer.cast(pid, {:change, payload})
+        pid
     end
 
     @doc """
@@ -33,15 +35,15 @@ defmodule Plover.Github.Worker do
     @doc """
         Modifies the current state of the Pull Request
     """
-    def handle_call({:change, payload}, _from, state) do
+    def handle_cast({:change, payload}, state) do
         new_state = Handel.process(payload, state)
-        {:reply, new_state, new_state}
+        {:noreply, new_state}
     end
 
     @doc """
         Returns the current state of the Pull Request
     """
     def handle_call(:fetch_state, _from, state) do
-        {:reply, state, state}
+        {:reply, {:ok, state}, state}
     end
 end

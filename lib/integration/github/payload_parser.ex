@@ -2,7 +2,7 @@ defmodule Integration.Github.PayloadParser do
     @moduledoc """
         Extracts information from a github pull request
     """
-    alias Integration.Github.{Payload}
+    alias Integration.Github.Payload
 
     @doc """
         Returns the action of the supplied payload
