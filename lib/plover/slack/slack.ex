@@ -47,7 +47,8 @@ defmodule Plover.Slack do
                 |> Map.fetch!("ts")
                 |> new_message!(uuid, channel_id, pull_url)
             message ->
-                update_slack_message!(message_type, message.timestamp, channel_id, pull_url, slack_ids)
+                update_slack_message!(message_type, message.timestamp, channel_id, pull_url,
+                    slack_ids)
                 {:ok, message}
         end
     end

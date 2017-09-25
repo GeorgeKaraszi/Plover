@@ -18,6 +18,7 @@ defmodule Integration.Github.PayloadParser do
     def action(%{"action" => pr_action}), do: pr_action
     def action(_), do: nil
 
+    def action_state(payload, state), do: state == action(payload)
 
     @doc """
         Returns the Organization's full name
@@ -153,7 +154,7 @@ defmodule Integration.Github.PayloadParser do
     def reviewers(%{"pull_request" => pull_request}), do: reviewers(pull_request)
     def reviewers(%{"requested_reviewers" => reviewers}), do: reviewers(reviewers)
     def reviewers([%{"login" => login} | reviewers]), do: [login | reviewers(reviewers)]
-    def reviewers([]), do: []
+    def reviewers(_), do: []
 
     @doc """
         Returns the state for which the review status has been submitted as
@@ -202,6 +203,14 @@ defmodule Integration.Github.PayloadParser do
     def requested_reviewer(%{"login" => login}), do: login
     def requested_reviewer(_), do: nil
 
+    @doc """
+        Returns a boolean value determinding if the pull request has been merged or not.
+
+        ## Examples
+        iex> %{"pull_request" => %{"merged_at" => "http://my-url.com"}}
+        iex> |> Integration.Github.PayloadParser.pull_url()
+        "http://my-url.com"
+    """
     def merged_state(%{"pull_request" => %{"merged_at" => merged_at}}) do
         merged_at != nil
     end
@@ -230,7 +239,8 @@ defmodule Integration.Github.PayloadParser do
             reviewer: reviewer(payload),
             reviewers: reviewers(payload),
             requested_reviewer: requested_reviewer(payload),
-            has_been_merged: merged_state(payload)
+            has_been_merged: merged_state(payload),
+            has_been_closed: action_state(payload, "closed")
         }
     end
 end

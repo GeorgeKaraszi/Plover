@@ -31,7 +31,6 @@ defmodule Plover.Application do
       worker(Slack.RealTimeMessenger, [System.get_env("SLACK_CHANNEL_NAME")]),
     ]
 
-
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: Plover.Supervisor]

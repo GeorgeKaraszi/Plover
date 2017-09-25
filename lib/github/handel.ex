@@ -149,10 +149,9 @@ defmodule Github.Handel do
         [{user.github_login, user.slack_login, user_state}]
     end
 
+    defp message_action_inspector(_, nil), do: nil
     defp message_action_inspector(reviewers, "approved") do
-        all_approved =
-            reviewers
-            |> Enum.all?(fn r -> "approved" == elem(r, 2) end)
+        all_approved = Enum.all?(reviewers, fn r -> "approved" == elem(r, 2) end)
         if all_approved, do: "fully_approved", else: "partial_approval"
     end
 

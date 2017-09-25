@@ -20,7 +20,7 @@ defmodule PloverWeb.WebhookController do
         conn |> put_status(:ok) |> json(%{reponse: response})
       error ->
         response = log_response(error, :error)
-        conn |> put_status(:bad_request) |> json(%{reponse: response})
+        conn |> put_status(:ok) |> json(%{reponse: response})
     end
   end
 

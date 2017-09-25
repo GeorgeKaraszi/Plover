@@ -14,5 +14,6 @@ defmodule Integration.Github.Payload do
               reviewer: nil,
               reviewers: [],
               requested_reviewer: nil,
-              has_been_merged: false
+              has_been_merged: false,
+              has_been_closed: false
 end

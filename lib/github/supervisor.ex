@@ -1,4 +1,6 @@
 defmodule Github.Supervisor do
+    @moduledoc false
+
     use Supervisor
     alias Github.{State, Worker}
 
@@ -12,10 +14,7 @@ defmodule Github.Supervisor do
         Initalizes what this supervisor's children will look like and start with
     """
     def init(state) do
-        children = [
-            worker(Worker, [state], restart: :transient)
-        ]
-
+        children = [worker(Worker, [state], restart: :transient)]
         supervise(children, strategy: :simple_one_for_one)
     end
 end
