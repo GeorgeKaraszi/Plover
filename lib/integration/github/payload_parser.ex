@@ -202,6 +202,12 @@ defmodule Integration.Github.PayloadParser do
     def requested_reviewer(%{"login" => login}), do: login
     def requested_reviewer(_), do: nil
 
+    def merged_state(%{"pull_request" => %{"merged_at" => merged_at}}) do
+        merged_at != nil
+    end
+
+    def merged_state(_), do: false
+
     @doc """
         Returns list of all avaiaible data in a PR
 
@@ -224,6 +230,7 @@ defmodule Integration.Github.PayloadParser do
             reviewer: reviewer(payload),
             reviewers: reviewers(payload),
             requested_reviewer: requested_reviewer(payload),
+            has_been_merged: merged_state(payload)
         }
     end
 end

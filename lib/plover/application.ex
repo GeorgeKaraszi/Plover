@@ -26,9 +26,9 @@ defmodule Plover.Application do
       # Start the endpoint when the application starts
       supervisor(Endpoint, []),
       supervisor(Github.Supervisor, []),
-      supervisor(GithubWebhook, []),
       # Start your own worker by calling: Plover.Worker.start_link(arg1, arg2, arg3)
-      # worker(Plover.Worker, [arg1, arg2, arg3]),
+      worker(GithubWebhook, []),
+      worker(Slack.RealTimeMessenger, [System.get_env("SLACK_CHANNEL_NAME")]),
     ]
 
 

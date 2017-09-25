@@ -2,6 +2,9 @@ defmodule Slack.RealTimeMessenger do
   @moduledoc false
   use GenServer
 
+  alias Plover.Slack
+  alias Github.State
+
   def start_link(channel_name) do
     GenServer.start_link(__MODULE__, channel_name, name: __MODULE__)
   end
@@ -10,13 +13,14 @@ defmodule Slack.RealTimeMessenger do
     {:ok, channel_name}
   end
 
-  def post_message(github_state) do
+  def post_message(github_state \\ %State{}) do
     GenServer.cast(__MODULE__, {:send_message, github_state})
   end
 
   # Server Callbacks
 
-  def handel_cast({:send_message, _github_state}, _from, channel_name) do
-    {:no_reply, channel_name}
+  def handle_cast({:send_message, github_state}, channel_name) do
+    Slack.post_to_slack!(channel_name, github_state)
+    {:noreply, channel_name}
   end
 end

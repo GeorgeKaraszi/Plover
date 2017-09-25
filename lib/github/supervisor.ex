@@ -1,5 +1,4 @@
 defmodule Github.Supervisor do
-    @moduledoc false
     use Supervisor
     alias Github.{State, Worker}
 

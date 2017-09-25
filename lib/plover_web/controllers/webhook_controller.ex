@@ -9,13 +9,13 @@ defmodule PloverWeb.WebhookController do
 
   def payload(conn, %{"payload" => raw_payload}) do
     payload = parsed_payload(raw_payload)
-    results = payload
-              |> GithubWebhook.find_process()
-              |> Worker.submit_changes(payload)
-              |> Worker.fetch_state()
+    results =
+      payload
+      |> GithubWebhook.find_process()
+      |> Worker.submit_changes(payload)
 
     case results do
-      {:ok, results} ->
+      :ok ->
         response = log_response(results)
         conn |> put_status(:ok) |> json(%{reponse: response})
       error ->

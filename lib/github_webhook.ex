@@ -35,7 +35,7 @@ defmodule GithubWebhook do
       Returns the existing or creates a new process for handeling pull requests
     """
     def get_worker(name) do
-      process_name = String.to_atom(name)
+      process_name = convert_name(name)
 
       case Process.whereis(process_name) do
         nil ->
@@ -43,6 +43,11 @@ defmodule GithubWebhook do
         pid -> pid
       end
     end
+
+    def convert_name(name) when is_binary(name) do
+      String.to_atom(name)
+    end
+    def convert_name(name), do: name
 
     #### OLD DATA TO REFERENCE ####
     # defp process_request({"submitted", payload}) do
