@@ -32,14 +32,6 @@ defmodule Plover.Slack do
         slack_ids        = id_to_string!(github_state.targeted_users)
         uuid             = get_uuid(pull_url, message_type, slack_ids)
 
-        IO.puts """
-            PARAMS(DEBUG) =
-            Message type = #{inspect message_type}
-            pull url     = #{inspect pull_url}
-            channel_id   = #{inspect channel_id}
-            slack_ids    = #{inspect slack_ids}
-            uuid         = #{inspect uuid}
-        """
         case find_message(uuid) do
             nil ->
                 message_type

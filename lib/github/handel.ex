@@ -31,7 +31,7 @@ defmodule Github.Handel do
     end
 
     def process_request("review_requested", payload, state) do
-        assign_reviewers(state, payload.requested_reviewer, "review_requested")
+        assign_reviewer(state, payload.requested_reviewer, "review_requested")
     end
 
     @doc """
@@ -97,8 +97,8 @@ defmodule Github.Handel do
        Returns: new state with designated list of reviewers
     """
 
-    def assign_reviewers(_state, nil, _user_state), do: []
-    def assign_reviewers(state, github_login, user_state) do
+    def assign_reviewer(_state, nil, _user_state), do: []
+    def assign_reviewer(state, github_login, user_state) do
         reviewer = state.reviewers
                    |> find_missing_login(github_login)
                    |> reviewer(user_state)

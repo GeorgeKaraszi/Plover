@@ -208,8 +208,12 @@ defmodule Integration.Github.PayloadParser do
 
         ## Examples
         iex> %{"pull_request" => %{"merged_at" => "http://my-url.com"}}
-        iex> |> Integration.Github.PayloadParser.pull_url()
-        "http://my-url.com"
+        iex> |> Integration.Github.PayloadParser.merged_state()
+        true
+
+        iex> %{"pull_request" => %{"merged_at" => nil}}
+        iex> |> Integration.Github.PayloadParser.merged_state()
+        false
     """
     def merged_state(%{"pull_request" => %{"merged_at" => merged_at}}) do
         merged_at != nil

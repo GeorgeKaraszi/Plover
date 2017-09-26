@@ -1,27 +1,31 @@
 defmodule Plover.Github.HandelTest do
     @moduledoc false
     use Plover.DataCase, async: true
-    alias Plover.Github.{State, Handel}
+    alias Github.{State, Handel}
     alias Integration.Github.Payload
 
     describe "adding reviewers" do
 
         test "should add existing reviewers to the worker's state" do
-            payload = :github_payload |> build() |> with_reviewers(3)
-            state = Handel.assign_reviewers(%State{}, ["not found" | payload.reviewers], "test_state")
-            assert Enum.count(state.reviewers) == 3
+            payload = :github_payload |> build() |> with_reviewer()
+            state =
+                %State{}
+                |> Handel.assign_reviewer(payload.requested_reviewer, "test_state")
+                |> Handel.assign_reviewer("Not found", "test_state")
+
+            assert Enum.count(state.reviewers) == 1
         end
 
         test "should not add reviewers that have not registered on the system" do
-            payload = %Payload{reviewers: ["TestUser1", "TestUser2"]}
-            state = Handel.assign_reviewers(%State{}, payload.reviewers, "test_state")
+            payload = %Payload{requested_reviewer: "TestUser1"}
+            state = Handel.assign_reviewer(%State{}, payload.requested_reviewer, "test_state")
             assert Enum.count(state.reviewers) == 0
         end
     end
 
     describe "Removing Reviewers" do
         test "Should remove matched reviewer in the existing state" do
-            payload = :github_payload |> build() |> with_reviewer()
+            payload = build(:github_payload) |> with_reviewer()
             state =
                 %State{reviewers: [{payload.requested_reviewer, "slack_dummy", "dummy_state"}]}
                 |> Handel.remove_reviewer(payload.requested_reviewer)
@@ -49,6 +53,36 @@ defmodule Plover.Github.HandelTest do
             {_github, _slack, "approved"}     = List.keyfind(state.reviewers, "test_user2", 0)
             {_github, _slack, "not_approved"} = List.keyfind(state.reviewers, "test_user", 0)
 
+        end
+
+    end
+
+    describe "processing message type" do
+        test "It should return partial approval if not everyone has submitted a review" do
+            reviewers = [{"test_user", "slack_dummy", "approved"},
+                         {"test_user2", "slack_dummy2", "not_approved"}]
+            state = %State{reviewers: reviewers}
+                    |> Handel.process_message_type("submitted", "approved")
+
+            assert state.message_type == "partial_approval"
+        end
+
+        test "It should return fully approved if everyone has approved" do
+            reviewers = [{"test_user", "slack_dummy", "approved"},
+                         {"test_user2", "slack_dummy2", "approved"}]
+
+            state = %State{reviewers: reviewers}
+                |> Handel.process_message_type("submitted", "approved")
+
+            assert state.message_type == "fully_approved"
+        end
+
+        test "It returns pull request when a review has been requested or removed" do
+            state = Handel.process_message_type(%State{}, "review_requested", nil)
+            assert state.message_type == "pull_request"
+
+            state = Handel.process_message_type(%State{}, "review_requested_removed", nil)
+            assert state.message_type == "pull_request"
         end
 
     end

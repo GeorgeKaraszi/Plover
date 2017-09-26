@@ -20,7 +20,13 @@ defmodule Plover.GithubPayloadFactory do
                     reviewer: nil,
                     reviewers: [],
                     requested_reviewer: nil,
+                    has_been_merged: false,
+                    has_been_closed: false,
                 }
+            end
+
+            def has_been_reviewed(%Payload{} = payload, review_state: review_state) do
+                %{payload | action: "submitted", review_state: review_state}
             end
 
             def with_owner(%Payload{} = payload), do: with_owner(payload, insert(:user))
