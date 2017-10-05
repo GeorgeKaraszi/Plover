@@ -6,8 +6,7 @@ defmodule Plover.Slack do
 
     import Ecto.Query
     alias Plover.Repo
-    alias Plover.Slack.Message
-    alias Github.State
+    alias Plover.Slack.{State, Message}
     alias Slack.Web.{Chat, Channels, Users}
     alias Plover.Commands.ErrorCommands
 
@@ -25,22 +24,22 @@ defmodule Plover.Slack do
           Returns
           - The message changeset
     """
-    def post_to_slack!(channel_name, github_state \\ %State{}) do
-        message_type     = github_state.message_type
-        pull_url         = github_state.pull_request_url
-        channel_id       = get_channel_id!(channel_name)
-        slack_ids        = id_to_string!(github_state.targeted_users)
-        uuid             = get_uuid(pull_url, message_type, slack_ids)
-
+    def post_to_slack!(channel_name, github \\ %Github.State{}) do
+        uuid  =  get_uuid(github.message_type, github.pull_request_url)
+        slack = %State{
+                message_type: github.message_type,
+                pull_url: github.pull_request_url,
+                channel_id: get_channel_id!(channel_name),
+                targeted_users: id_to_string!(github.targeted_users)
+            }
         case find_message(uuid) do
             nil ->
-                message_type
-                |> post_slack_message!(channel_id, pull_url, slack_ids)
+                slack
+                |> post_slack_message!(github)
                 |> Map.fetch!("ts")
-                |> new_message!(uuid, channel_id, pull_url)
+                |> new_message!(slack, uuid)
             message ->
-                update_slack_message!(message_type, message.timestamp, channel_id, pull_url,
-                    slack_ids)
+                post_slack_message!(slack, github, message.timestamp)
                 {:ok, message}
         end
     end
@@ -48,14 +47,7 @@ defmodule Plover.Slack do
     @doc """
         Returns the UUID of a message based on the combination of pull url, message type, and slack ids
     """
-    def get_uuid(pull_url, message_type, slack_id \\ "") do
-        case message_type do
-            action when action in ["approved", "changes_requested"] ->
-                pull_url <> message_type <> slack_id |> to_uuid()
-            _ ->
-                pull_url <> message_type |> to_uuid()
-        end
-    end
+    def get_uuid(message_type, url), do: message_type <> url |> to_uuid()
 
     @doc """
         Will find a message based on the UUID and from what time frame it was created
@@ -73,10 +65,10 @@ defmodule Plover.Slack do
     @doc """
         Will submit a message to the speicifed slack channel
     """
-    def post_slack_message!(message_type, channel_id, pull_url, slack_id) do
-        [title, attachment] = slack_message!(message_type, slack_id, pull_url)
+    def post_slack_message!(slack, github) do
+        [title, attachment] = slack_message!(slack.message_type, slack, github)
         Chat.post_message(
-            channel_id,
+            slack.channel_id,
             title,
             %{link_names: true, parse: :full, attachments: attachment}
         )
@@ -85,10 +77,10 @@ defmodule Plover.Slack do
     @doc """
         Will update an existing message on a speicifed slack channel
     """
-    def update_slack_message!(message_type, timestamp, channel_id, pull_url, slack_id) do
-        [title, attachment] = slack_message!(message_type, slack_id, pull_url)
+    def post_slack_message!(slack, github, timestamp) do
+        [title, attachment] = slack_message!(slack.message_type, slack, github)
         Chat.update(
-            channel_id,
+            slack.channel_id,
             title,
             timestamp,
             %{link_names: true, parse: :full, attachments: attachment}
@@ -98,8 +90,8 @@ defmodule Plover.Slack do
     @doc """
         Creates a new message
     """
-    def new_message!(timestamp, uuid, channel_id, pull_url) do
-        params    = %{channel_id: channel_id, pull_url: pull_url, timestamp: timestamp, uuid: uuid}
+    def new_message!(timestamp, uuid, %State{channel_id: channel_id, pull_url: url}) do
+        params    = %{channel_id: channel_id, pull_url: url, timestamp: timestamp, uuid: uuid}
         changeset = Message.changeset(%Message{}, params)
 
         case Repo.insert_or_update(changeset) do
@@ -141,7 +133,7 @@ defmodule Plover.Slack do
 
         #Example
         iex> [{0, "george", 2}, {0, "testuser", 2}]
-        iex> |> id_to_string()
+        iex> |> Plover.Slack.id_to_string!()
         "george, testuser"
     """
     def id_to_string!(arg) when is_list(arg) and length(arg) >= 1 do
@@ -179,23 +171,33 @@ defmodule Plover.Slack do
     @doc """
         Formats the slack message based on the provided message type action
     """
-    def slack_message!("pull_request", slack_id, pull_url) do
-        " HEY THERE'S A PULL REQUEST FOR #{slack_id} !"
-        |> format_slack_message("Try to review this as soon as you can!", pull_url, "warning")
+    def slack_message!("pull_request", slack, _github) do
+        " HEY THERE'S A PULL REQUEST FOR #{slack.targeted_users} !"
+        |> format_slack_message("Try to review this as soon as you can!", slack.pull_url, "warning")
     end
 
-    def slack_message!("changes_requested", slack_id, pull_url) do
-        " You've been requested to make some changes #{slack_id} "
-        |> format_slack_message("You've been requested to make some changes", pull_url, "danger")
+    def slack_message!("changes_requested", slack, _github) do
+        " You've been requested to make some changes #{slack.targeted_users} "
+        |> format_slack_message("You've been requested to make some changes", slack.pull_url, "danger")
     end
 
-    def slack_message!("fully_approved", slack_id, pull_url) do
-        " You're PR as been fully approved! #{slack_id} "
-        |> format_slack_message("Merge it in if all requirements have been met!", pull_url)
+    def slack_message!("partial_approval", slack, github) do
+        total_count    = Enum.count(github.reviewers)
+        approval_count = Enum.reduce(github.reviewers, 0, fn(r, acc) ->
+            if elem(r, 2) == "approved", do: acc + 1, else: acc
+        end)
+
+        " You're PR as been (#{approval_count}/#{total_count}) approved! #{slack.targeted_users}"
+        |> format_slack_message("Merge it in if all requirements have been met!", slack.pull_url, "#4286f4")
     end
 
-    def slack_message!(type, _, pull_url) do
-        raise(ArgumentError, message: "Do not recognize (#{type}) message type from: #{pull_url}")
+    def slack_message!("fully_approved", slack, _github) do
+        " You're PR as been fully approved! #{slack.targeted_users} "
+        |> format_slack_message("Merge it in if all requirements have been met!", slack.pull_url)
+    end
+
+    def slack_message!(type, slack, _github) do
+        raise(ArgumentError, message: "Do not recognize (#{type}) message type from: #{slack.pull_url}")
     end
 
     defp format_slack_message(title, sub_text, pull_url, color \\ "good") do

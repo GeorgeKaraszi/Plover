@@ -4,4 +4,5 @@ defmodule Plover.Factory do
     use Plover.UserFactory
     use Plover.GithubPayloadFactory
     use Plover.SlackMessageFactory
+    use Plover.SlackStateFactory
 end
