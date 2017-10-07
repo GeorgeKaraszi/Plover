@@ -24,7 +24,7 @@ defmodule Plover.Slack do
           Returns
           - The message changeset
     """
-    def post_to_slack!(channel_name, github \\ %Github.State{}) do
+    def post_to_slack!(channel_name, %Github.State{} = github) do
         uuid  =  get_uuid(github.message_type, github.pull_request_url)
         slack = %State{
                 message_type: github.message_type,
@@ -37,7 +37,7 @@ defmodule Plover.Slack do
                 slack
                 |> post_slack_message!(github)
                 |> Map.fetch!("ts")
-                |> new_message!(slack, uuid)
+                |> new_message!(uuid, slack)
             message ->
                 post_slack_message!(slack, github, message.timestamp)
                 {:ok, message}
@@ -46,6 +46,10 @@ defmodule Plover.Slack do
 
     @doc """
         Returns the UUID of a message based on the combination of pull url, message type, and slack ids
+
+        #Examples
+        iex> Plover.Slack.get_uuid("Hello", "http://google.com")
+        "6D9965489DBC280E47B4A226C5B39733"
     """
     def get_uuid(message_type, url), do: message_type <> url |> to_uuid()
 
@@ -124,7 +128,7 @@ defmodule Plover.Slack do
             else
                 user_name
             end
-        %{"members" => members} = Users.list
+        %{"members" => members} = Users.list # Aliased Slack.Web.Users
         user_exists?(slack_name, members)
     end
 
@@ -148,7 +152,7 @@ defmodule Plover.Slack do
         Returns the channel id of a list of channels
 
         #Example
-        iex> channels = [%{"id": 1, "name": "false_channel"}, %{"id": 2, "name": "true_channel"}]
+        iex> channels = [%{"name" => "false_channel", "id" => 1}, %{"name" => "true_channel", "id" => 2}]
         iex> Plover.Slack.get_channel_id!("true_channel", channels)
         2
     """
@@ -187,8 +191,10 @@ defmodule Plover.Slack do
             if elem(r, 2) == "approved", do: acc + 1, else: acc
         end)
 
-        " You're PR as been (#{approval_count}/#{total_count}) approved! #{slack.targeted_users}"
-        |> format_slack_message("Merge it in if all requirements have been met!", slack.pull_url, "#4286f4")
+        percent = round((approval_count / total_count * 100))
+
+        " You're PR as been #{approval_count}/#{total_count} (#{percent}%) approved! #{slack.targeted_users}"
+        |> format_slack_message("Be patient and wait for all reviewers to complete their analysis.", slack.pull_url, "#4286f4")
     end
 
     def slack_message!("fully_approved", slack, _github) do
@@ -212,5 +218,7 @@ defmodule Plover.Slack do
         [title, [attachment]]
     end
 
-    defp to_uuid(arg), do: UUID.uuid3(:nil, arg)
+    defp to_uuid(data, protocal \\ :md5) do
+        protocal |> :crypto.hash(data) |> Base.encode16()
+    end
 end

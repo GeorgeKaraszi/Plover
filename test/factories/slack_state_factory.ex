@@ -1,12 +1,13 @@
 defmodule Plover.SlackStateFactory do
     @moduledoc false
-    alias Faker.{Company, Internet}
+    alias Faker.Internet
     defmacro __using__(_opts) do
         quote do
             def slack_state_factory do
                 %Plover.Slack.State{
                     message_type: "pull_request",
                     pull_url: Internet.url,
+                    channel_id: Internet.slug,
                     targeted_users: Internet.slug,
                 }
             end
