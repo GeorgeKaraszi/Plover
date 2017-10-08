@@ -60,36 +60,32 @@ defmodule Plover.Github.HandelTest do
     describe "processing message type" do
 
         test "It should return partial approval if not everyone has submitted a review" do
-            reviewers = [{"test_user", "slack_dummy", "approved"},
-                         {"test_user2", "slack_dummy2", "not_approved"}]
-            state = %State{reviewers: reviewers}
+            state = %State{reviewers: [{nil, nil, "approved"}, {nil, nil, "not_approved"}]}
                     |> Handel.process_message_type("submitted", "approved")
-
             assert state.message_type == "partial_approval"
         end
 
         test "It should return fully approved if everyone has approved" do
-            reviewers = [{"test_user", "slack_dummy", "approved"},
-                         {"test_user2", "slack_dummy2", "approved"}]
-
-            state = Handel.process_message_type(%State{reviewers: reviewers}, "submitted", "approved")
+            state =  %State{reviewers: [{nil, nil, "approved"}, {nil, nil, "approved"}]}
+                    |> Handel.process_message_type("submitted", "approved")
             assert state.message_type == "fully_approved"
         end
 
         test "It returns different approval states based on approval level and who was removed" do
-            partial_reviewers = [{"test_user", "slack_dummy", "approved"},
-                                 {"test_user2", "slack_dummy2", "not_approved_yet"}]
 
-            state = %State{reviewers: partial_reviewers}
+            # Has no reviewer's approved
+            state = %State{reviewers: [{nil, nil, "not_approved"}]}
+                    |> Handel.process_message_type("review_request_removed", nil)
+            assert state.message_type == "pull_request"
+
+
+            # Does not have all reviewers that are approved
+            state = %State{reviewers: [{nil, nil, "approved"}, {nil, nil, "not_approved"}]}
                     |> Handel.process_message_type("review_request_removed", nil)
             assert state.message_type == "partial_approval"
 
             # Full of nothing but approved review's
-
-            full_reviewers = [{"test_user", "slack_dummy", "approved"},
-                              {"test_user2", "slack_dummy2", "approved"}]
-
-            state = %State{reviewers: full_reviewers}
+            state = %State{reviewers: [{nil, nil, "approved"}, {nil, nil, "approved"}]}
                     |> Handel.process_message_type("review_request_removed", nil)
             assert state.message_type == "fully_approved"
 

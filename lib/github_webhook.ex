@@ -42,11 +42,17 @@ defmodule GithubWebhook do
       end
     end
 
+    @doc """
+      Converts a string into an atom. Atom's are required for processes to be found by their name.
+    """
     def convert_name(name) when is_binary(name) do
       String.to_atom(name)
     end
     def convert_name(name), do: name
 
+    @doc """
+      Validates that the payload contains the correct values we want to process
+    """
     def valid?(%Payload{pull_url: pull_url, action: action} = payload) do
       cond do
         pull_url == nil ->
@@ -54,7 +60,7 @@ defmodule GithubWebhook do
         action == nil ->
           {:error, {:empty_action, "Empty action"}}
         action not in ["submitted", "review_requested", "review_request_removed", "closed"] ->
-          {:error, {:unknown_action, "Do not understand (#{payload.action})"}}
+          {:error, {:unknown_action, "Do not understand (#{action}) action"}}
         true ->
           {:ok, payload}
       end
