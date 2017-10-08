@@ -198,7 +198,7 @@ defmodule Plover.Slack do
     end
 
     def slack_message!("fully_approved", slack, _github) do
-        " You're PR as been fully approved! #{slack.targeted_users} "
+        " You're PR has been fully approved! #{slack.targeted_users} "
         |> format_slack_message("Merge it in if all requirements have been met!", slack.pull_url)
     end
 

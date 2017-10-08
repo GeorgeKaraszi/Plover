@@ -23,9 +23,9 @@ defmodule GithubWebhook do
     end
 
     def handle_call({:retrieve, payload}, _from, state) do
-      case payload.pull_url do
-        nil ->      {:reply, {:error, {:empty_name, "Empty pull url"}}, state}
-        pull_url -> {:reply, get_worker(pull_url), state}
+      case valid?(payload) do
+        {:error, message} -> {:reply, {:error, message}, state}
+        _true             -> {:reply, get_worker(payload.pull_url), state}
       end
     end
 
@@ -46,4 +46,17 @@ defmodule GithubWebhook do
       String.to_atom(name)
     end
     def convert_name(name), do: name
+
+    def valid?(%Payload{pull_url: pull_url, action: action} = payload) do
+      cond do
+        pull_url == nil ->
+          {:error, {:empty_name, "Empty pull url"}}
+        action == nil ->
+          {:error, {:empty_action, "Empty action"}}
+        action not in ["submitted", "review_requested", "review_request_removed", "closed"] ->
+          {:error, {:unknown_action, "Do not understand (#{payload.action})"}}
+        true ->
+          {:ok, payload}
+      end
+    end
 end

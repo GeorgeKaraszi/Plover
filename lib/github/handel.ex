@@ -10,8 +10,8 @@ defmodule Github.Handel do
        Handels the payload actions for a Github worker's request
     """
     def process(payload \\ %Payload{}, state \\ %State{}) do
-        payload.action
-        |> process_request(payload, state)
+        payload
+        |> process_request(state)
         |> assign_owner(payload.pull_owner)
         |> process_message_type(payload.action, payload.review_state)
         |> record_action()
@@ -22,16 +22,15 @@ defmodule Github.Handel do
 
        Returns: new state from the response
     """
-    def process_request("submitted", payload, state) do
-        change_user_state(state, payload.reviewer, payload.review_state)
-    end
-
-    def process_request("review_request_removed", payload, state) do
-        remove_reviewer(state, payload.requested_reviewer)
-    end
-
-    def process_request("review_requested", payload, state) do
-        assign_reviewer(state, payload.requested_reviewer, "review_requested")
+    def process_request(%Payload{action: action} = payload, state) do
+        case action do
+            "submitted" ->
+                change_user_state(state, payload.reviewer, payload.review_state)
+            "review_request_removed" ->
+                remove_reviewer(state, payload.requested_reviewer)
+            _action ->
+                assign_reviewer(state, payload.requested_reviewer, action)
+        end
     end
 
     @doc """
@@ -82,7 +81,7 @@ defmodule Github.Handel do
 
        Returns: nil if exists or not registered
     """
-    def find_missing_login(_state, nil), do: nil
+    def find_missing_login(_user_list, nil), do: nil
     def find_missing_login(user_list, github_login) when is_list(user_list) do
         if List.keyfind(user_list, github_login, 0) do
             nil
@@ -150,15 +149,25 @@ defmodule Github.Handel do
     end
 
     defp message_action_inspector(_, nil), do: nil
-    defp message_action_inspector(reviewers, "approved") do
-        all_approved = Enum.all?(reviewers, fn r -> "approved" == elem(r, 2) end)
-        if all_approved, do: "fully_approved", else: "partial_approval"
+    defp message_action_inspector(reviewers, action) do
+        case action do
+            "approved"               -> approval_count(reviewers)
+            "review_request_removed" -> approval_count(reviewers)
+            "review_requested"       -> "pull_request"
+            _fallback                -> action
+        end
     end
 
-    defp message_action_inspector(_, action) do
-        case String.starts_with?(action, "review") do
-            true -> "pull_request"
-            _ -> action
+    defp approval_count(reviewers) do
+        total_count    = Enum.count(reviewers)
+        approval_count = Enum.reduce(reviewers, 0, fn(r, acc) ->
+            if elem(r, 2) == "approved", do: acc + 1, else: acc
+        end)
+
+        cond do
+            approval_count == 0          -> "pull_request"
+            approval_count < total_count -> "partial_approval"
+            true                         -> "fully_approved"
         end
     end
 end
