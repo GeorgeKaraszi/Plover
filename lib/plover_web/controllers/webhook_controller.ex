@@ -10,7 +10,7 @@ defmodule PloverWeb.WebhookController do
     payload = parsed_payload(raw_payload)
     results =
       payload
-      |> GithubWebhook.find_process()
+      |> Github.find_process()
       |> Worker.submit_changes(payload)
 
     case results do

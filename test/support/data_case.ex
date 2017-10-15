@@ -36,6 +36,8 @@ defmodule Plover.DataCase do
       Sandbox.mode(Plover.Repo, {:shared, self()})
     end
 
+    on_exit(:flush_redis, fn -> Redis.destroy_all! end)
+
     :ok
   end
 
