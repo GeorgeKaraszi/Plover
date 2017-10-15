@@ -3,7 +3,6 @@ defmodule PloverWeb.WebhookController do
   use PloverWeb, :controller
 
   alias Github.Worker
-  alias Integration.Github.PayloadParser
 
   @name __MODULE__ # Assigns the current module name globally
 
@@ -32,7 +31,11 @@ defmodule PloverWeb.WebhookController do
     |> json(%{reponse: response, reason: "Unknown Parameter"})
   end
 
-  defp parsed_payload(payload), do: payload |> Poison.decode!() |> PayloadParser.request_details()
+  defp parsed_payload(payload) do
+    payload
+    |> Poison.decode!()
+    |> PayloadParser.request_details()
+  end
 
   defp log_response(response, type \\ :info) do
     inspected_response = inspect(response)

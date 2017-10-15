@@ -1,7 +1,7 @@
 defmodule Plover.GithubPayloadFactory do
     @moduledoc false
     alias Faker.{Company, Internet}
-    alias Integration.Github.Payload
+    alias PayloadParser.Payload
     alias Plover.Account.User
     defmacro __using__(_opts) do
         quote do

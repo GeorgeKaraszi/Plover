@@ -1,4 +1,4 @@
-defmodule Slack.RealTimeMessenger do
+defmodule SlackMessenger do
   @moduledoc false
   use GenServer
 

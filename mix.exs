@@ -25,6 +25,7 @@ defmodule Plover.Mixfile do
         :logger,
         :runtime_tools,
         :httpoison,
+        :redix,
         :ueberauth,
         :ueberauth_github
       ]
@@ -52,7 +53,7 @@ defmodule Plover.Mixfile do
       {:httpoison, "~> 0.12"},
       {:ueberauth, "~> 0.4"},
       {:ueberauth_github, "~> 0.4"},
-      {:ueberauth_facebook, "~> 0.6"},
+      {:redix, ">= 0.0.0"},
       {:slack, "~> 0.12.0"},
       {:ex_machina, "~> 2.0", only: [:dev, :test]},
       {:faker, "~> 0.8", only: [:dev, :test]},

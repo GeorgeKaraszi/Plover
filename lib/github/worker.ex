@@ -3,7 +3,6 @@ defmodule Github.Worker do
     use GenServer
     require Logger
     alias Github.{Handel, State}
-    alias Slack.RealTimeMessenger
 
     def start_link(state \\ %State{}, opts \\ []) do
         state = %{state | pull_request_url: Atom.to_string(opts[:name])}
@@ -58,7 +57,7 @@ defmodule Github.Worker do
         if Enum.empty?(state.targeted_users) do
             {:stop, :normal, state}
         else
-            RealTimeMessenger.post_message(state)
+            SlackMessenger.post_message(state)
             {:noreply, state}
         end
     end

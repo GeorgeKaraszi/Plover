@@ -27,8 +27,8 @@ defmodule Plover.Application do
       supervisor(Endpoint, []),
       supervisor(Github.Supervisor, []),
       # Start your own worker by calling: Plover.Worker.start_link(arg1, arg2, arg3)
-      worker(GithubWebhook, []),
-      worker(Slack.RealTimeMessenger, [System.get_env("SLACK_CHANNEL_NAME")]),
+      worker(Github, []),
+      worker(SlackMessenger, [System.get_env("SLACK_CHANNEL_NAME")]),
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
