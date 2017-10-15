@@ -27,8 +27,9 @@ defmodule Plover.Application do
       supervisor(Endpoint, []),
       supervisor(Github.Supervisor, []),
       # Start your own worker by calling: Plover.Worker.start_link(arg1, arg2, arg3)
-      worker(Github, []),
+      worker(Redis, [System.get_env("REDIS_URL")]),
       worker(SlackMessenger, [System.get_env("SLACK_CHANNEL_NAME")]),
+      worker(Github, [])
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

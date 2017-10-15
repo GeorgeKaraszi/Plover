@@ -5,6 +5,7 @@ defmodule SlackMessenger do
   alias Plover.Slack
   alias Github.State
 
+  @spec post_message(String.t) :: GenServer.on_start()
   def start_link(channel_name) do
     GenServer.start_link(__MODULE__, channel_name, name: __MODULE__)
   end
@@ -13,7 +14,8 @@ defmodule SlackMessenger do
     {:ok, channel_name}
   end
 
-  def post_message(github_state \\ %State{}) do
+  @spec post_message(%State{}) :: :ok
+  def post_message(github_state) do
     GenServer.cast(__MODULE__, {:send_message, github_state})
   end
 

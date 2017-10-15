@@ -8,18 +8,19 @@ defmodule Github do
         GenServer.start_link(__MODULE__, state, name: __MODULE__)
       end
 
+      def init(state) do
+        {:ok, state}
+      end
+
       @doc """
         Find's the process for a given payload
       """
-      def find_process(%Payload{} = payload) do
+      @spec find_process(%Payload{}) :: {:error, {atom(), String.t}} | GenServer.server()
+      def find_process(payload) do
         GenServer.call(__MODULE__, {:retrieve, payload})
       end
 
       # Server (callbacks)
-
-      def init(state) do
-        {:ok, state}
-      end
 
       def handle_call({:retrieve, payload}, _from, state) do
         case valid?(payload) do

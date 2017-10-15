@@ -3,19 +3,23 @@ defmodule Github.Worker do
     use GenServer
     require Logger
     alias Github.{Handel, State}
+    alias PayloadParser.Payload
 
-    def start_link(state \\ %State{}, opts \\ []) do
+    @spec start_link(%State{}, Keyword.t()) :: GenServer.on_start()
+    def start_link(state, opts) do
         state = %{state | pull_request_url: Atom.to_string(opts[:name])}
         GenServer.start_link(__MODULE__, state, opts)
     end
 
-    def init(state \\ %State{}) do
-        {:ok, state}
+    def init(%State{pull_request_url: url} = state) do
+        {:ok, recovery_state} = Redis.retrieve(url)
+        {:ok, recovery_state || state}
     end
 
     @doc """
         Request changes to the current state of the Pull Request
     """
+    @spec submit_changes(GenServer.server(), %Payload{}) :: :ok | {:error, String.t}
     def submit_changes({:ok, pid}, payload),   do: submit_changes(pid, payload)
 
     def submit_changes({:error, response}, _), do: {:error, response}
@@ -27,6 +31,7 @@ defmodule Github.Worker do
     @doc """
         Request current state of the Pull Request
     """
+    @spec fetch_state(GenServer.server()) :: {:ok, %State{}}
     def fetch_state(pid) do
         GenServer.call(pid, :fetch_state)
     end
@@ -38,7 +43,7 @@ defmodule Github.Worker do
     """
     def handle_cast({:change, payload}, state) do
         if payload.has_been_closed || payload.has_been_merged do
-            {:stop, :normal, state}
+            close_worker(state)
         else
             payload
             |> Handel.process(state)
@@ -55,10 +60,17 @@ defmodule Github.Worker do
 
     defp handle_process_return_state(state) do
         if Enum.empty?(state.targeted_users) do
-            {:stop, :normal, state}
+            close_worker(state)
         else
-            SlackMessenger.post_message(state)
+            state
+            |> Redis.submit(state.pull_request_url)
+            |> SlackMessenger.post_message()
             {:noreply, state}
         end
+    end
+
+    defp close_worker(%State{pull_request_url: url} = state) do
+        Redis.destroy(url)
+        {:stop, :normal, state}
     end
 end
