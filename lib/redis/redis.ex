@@ -48,10 +48,6 @@ defmodule Redis do
     end
 
     def handle_cast({:submit, key, state_value}, conn) do
-
-        IO.puts "XXXXXXXXXXXXXXXX"
-        IO.inspect state_value
-        IO.puts "XXXXXXXXXXXXXXXXXXXXXXX"
         encoded_value = Poison.encode!(state_value)
 
         Redix.command(conn, ["SET", key, encoded_value])

@@ -21,7 +21,11 @@ defmodule Github.State do
 
     defimpl Poison.Decoder, for: Github.State do
         def decode(state, _options) do
-            %{state | reviewers: decode_tuple_list(state.reviewers), owners: decode_tuple_list(state.owners)}
+            %{state |
+                reviewers: decode_tuple_list(state.reviewers),
+                owners: decode_tuple_list(state.owners),
+                targeted_users: decode_tuple_list(state.targeted_users)
+            }
         end
 
         def decode_tuple_list([raw_tuple | tail]), do: [List.to_tuple(raw_tuple) | decode_tuple_list(tail)]
