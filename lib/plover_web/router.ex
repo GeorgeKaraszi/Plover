@@ -19,6 +19,8 @@ defmodule PloverWeb.Router do
 
     get "/", PageController, :index
     resources "/account", AccountController, except: [:new], singleton: true
+
+    get "/wakeup", PageController, :wakeup
   end
 
   scope "/auth", PloverWeb do
