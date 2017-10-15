@@ -2,7 +2,7 @@ defmodule Plover.Github.HandelTest do
     @moduledoc false
     use Plover.DataCase, async: true
     alias Github.{State, Handel}
-    alias Integration.Github.Payload
+    alias PayloadParser.Payload
 
     describe "adding reviewers" do
 

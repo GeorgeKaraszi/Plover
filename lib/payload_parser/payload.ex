@@ -1,4 +1,4 @@
-defmodule Integration.Github.Payload do
+defmodule PayloadParser.Payload do
     @moduledoc false
 
     defstruct action: nil,

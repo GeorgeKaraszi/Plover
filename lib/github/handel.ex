@@ -2,9 +2,9 @@ defmodule Github.Handel do
     @moduledoc """
         Handels each request that comes through to a Github Worker
     """
-    alias Integration.Github.Payload
     alias Github.State
     alias Plover.Account
+    alias PayloadParser.Payload
 
     @doc """
        Handels the payload actions for a Github worker's request
