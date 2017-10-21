@@ -6,6 +6,9 @@ defmodule Redis do
     use GenServer
     alias Github.State
 
+    # Will expire in 5 days
+    @expires_in 432_000
+
     @spec start_link(String.t | nil) :: GenServer.on_start()
     def start_link(redis_uri) do
         GenServer.start_link(__MODULE__, redis_uri, name: __MODULE__)
@@ -21,6 +24,11 @@ defmodule Redis do
     @spec retrieve(String.t) :: {:ok, %State{} | nil}
     def retrieve(key) do
         GenServer.call(__MODULE__, {:retrieve, key})
+    end
+
+    @spec get_all_keys(String.t) :: {:ok, list(String.t) | nil}
+    def get_all_keys(key \\ "*http*") do
+        GenServer.call(__MODULE__, {:get_keys, key})
     end
 
     @spec submit(%State{}, String.t) :: %State{}
@@ -47,10 +55,18 @@ defmodule Redis do
         end
     end
 
+    def handle_call({:get_keys, key_type}, _from, conn) do
+        case Redix.command(conn, ["KEYS", key_type]) do
+            {_, []}   -> {:reply, {:ok, nil}, conn}
+            {_, keys} -> {:reply, {:ok, keys}, conn}
+        end
+    end
+
     def handle_cast({:submit, key, state_value}, conn) do
         encoded_value = Poison.encode!(state_value)
 
         Redix.command(conn, ["SET", key, encoded_value])
+        Redix.command(conn, ["EXPIRE", key, @expires_in])
         {:noreply, conn}
     end
 

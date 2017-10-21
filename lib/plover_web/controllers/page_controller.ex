@@ -12,6 +12,12 @@ defmodule PloverWeb.PageController do
   # Used for waking up free dyno's on heroku using a scheduler
   # Could be used later for re-retrieving data from previous wake states
   def wakeup(conn, _params) do
+    {:ok, pull_request_urls} = Redis.get_all_keys
+
+    unless pull_request_urls == nil do
+      Enum.each(pull_request_urls, fn url -> Github.start_process(url) end)
+    end
+
     conn
     |> put_status(:ok)
     |> json(%{response: "ok"})

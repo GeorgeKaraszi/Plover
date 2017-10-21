@@ -20,6 +20,11 @@ defmodule Github do
         GenServer.call(__MODULE__, {:retrieve, payload})
       end
 
+      @spec start_process(String.t) :: {:ok, {atom(), String.t} | GenServer.server()}
+      def start_process(pull_url) do
+        GenServer.call(__MODULE__, {:start_process, pull_url})
+      end
+
       # Server (callbacks)
 
       def handle_call({:retrieve, payload}, _from, state) do
@@ -27,6 +32,10 @@ defmodule Github do
           {:error, message} -> {:reply, {:error, message}, state}
           _true             -> {:reply, get_worker(payload.pull_url), state}
         end
+      end
+
+      def handle_call({:start_process, pull_url}, _from, state) do
+        {:reply, get_worker(pull_url), state}
       end
 
       @doc """
