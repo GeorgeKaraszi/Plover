@@ -45,6 +45,14 @@ defmodule Plover.Slack do
     end
 
     @doc """
+        Removes any message that is related to a given pull request URL
+    """
+    @spec destroy_messages!(String.t, %Github.State{}) :: {integer, nil}
+    def destroy_messages!(channel_name, %Github.State{pull_request_url: pull_url}) do
+        Repo.delete_all(from m in Message, where: m.pull_url == ^pull_url)
+    end
+
+    @doc """
         Returns the UUID of a message based on the combination of pull url, message type, and slack ids
 
         #Examples

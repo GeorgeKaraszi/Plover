@@ -71,6 +71,7 @@ defmodule Github.Worker do
 
     defp close_worker(%State{pull_request_url: url} = state) do
         Redis.destroy(url)
+        SlackMessenger.destroy_messages(state)
         {:stop, :normal, state}
     end
 end

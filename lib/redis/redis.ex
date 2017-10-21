@@ -6,8 +6,8 @@ defmodule Redis do
     use GenServer
     alias Github.State
 
-    # Will expire in 5 days
-    @expires_in 432_000
+    # Will expire in 2 months
+    @expires_in 5_184_000
 
     @spec start_link(String.t | nil) :: GenServer.on_start()
     def start_link(redis_uri) do

@@ -19,10 +19,20 @@ defmodule SlackMessenger do
     GenServer.cast(__MODULE__, {:send_message, github_state})
   end
 
+  @spec destroy_messages(%State{}) :: :ok
+  def destroy_messages(github_state) do
+    GenServer.cast(__MODULE__, {:destroy_messages, github_state})
+  end
+
   # Server Callbacks
 
   def handle_cast({:send_message, github_state}, channel_name) do
     Slack.post_to_slack!(channel_name, github_state)
+    {:noreply, channel_name}
+  end
+
+  def handle_cast({:destroy_messages, github_state}, channel_name) do
+    Slack.destroy_messages!(channel_name, github_state)
     {:noreply, channel_name}
   end
 end
