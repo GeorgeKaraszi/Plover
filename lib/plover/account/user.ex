@@ -2,12 +2,11 @@ defmodule Plover.Account.User do
     @moduledoc false
 
     use Plover, :model
-    use Plover.Commands.CrudCommands,
-        record_type:  Plover.Account.User,
-        associations: []
 
     alias Plover.Account.User
     alias Plover.Slack
+
+    @type t :: %__MODULE__{}
 
     schema "users" do
         field :first_name, :string
@@ -16,13 +15,6 @@ defmodule Plover.Account.User do
         field :token, :string
         field :github_login, :string
         field :slack_login, :string
-
-        many_to_many :github_pull_requests,
-                     Plover.Github.PullRequest,
-                     join_through: "github_reviews"
-
-        has_many :github_pull_requests_projects,
-                 through: [:github_pull_requests, :github_project]
 
         timestamps()
     end

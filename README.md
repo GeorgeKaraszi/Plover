@@ -1,3 +1,4 @@
+[![codebeat badge](https://codebeat.co/badges/3685a0cb-3dd8-4cc1-aaa5-a77b9d8e45ec)](https://codebeat.co/projects/github-com-georgekaraszi-plover-master)
 [![Build Status](https://travis-ci.org/GeorgeKaraszi/Plover.svg?branch=master)](https://travis-ci.org/GeorgeKaraszi/Plover)
 
 # Starting Up

@@ -4,8 +4,9 @@ defmodule Plover.Slack do
         Messages are logged for every success slack reaponse we get back
     """
 
+    import Ecto.Query
     alias Plover.Repo
-    alias Plover.Slack.Message
+    alias Plover.Slack.{State, Message}
     alias Slack.Web.{Chat, Channels, Users}
     alias Plover.Commands.ErrorCommands
 
@@ -21,37 +22,79 @@ defmodule Plover.Slack do
           ID and Message Timestamp
 
           Returns
-          - Map type, Slack message response
+          - The message changeset
     """
-    def update_or_create_message!(slack_ids, pull_url, channel_name: channel_name) do
-        channel_name
-        |> get_channel_id!
-        |> update_or_create_message!(slack_ids, pull_url)
+    @spec post_to_slack!(String.t, Github.State.t) :: {:ok, struct}
+    def post_to_slack!(channel_name, github) do
+        uuid  =  get_uuid(github.message_type, github.pull_request_url)
+        slack = %State{
+                message_type: github.message_type,
+                pull_url: github.pull_request_url,
+                channel_id: get_channel_id!(channel_name),
+                targeted_users: id_to_string!(github.targeted_users)
+            }
+        case find_message(uuid) do
+            nil ->
+                slack
+                |> post_slack_message!(github)
+                |> Map.fetch!("ts")
+                |> new_message!(uuid, slack)
+            message ->
+                post_slack_message!(slack, github, message.timestamp)
+                {:ok, message}
+        end
     end
 
-    def update_or_create_message!(channel_id, slack_ids, pull_url) do
-        case Message.find_by(pull_url: pull_url, channel_id: channel_id) do
-            nil ->
-                response  = post_slack_message(channel_id, pull_url, slack_ids)
-                timestamp = Map.fetch!(response, "ts")
-                new_message!(channel_id, pull_url, timestamp)
-                response
-            message ->
-                update_slack_message(channel_id, message.timestamp, pull_url, slack_ids)
-        end
+    @doc """
+        Removes any message that is related to a given pull request URL
+    """
+    @spec destroy_messages!(Github.State.t) :: {integer, nil}
+    def destroy_messages!(%Github.State{pull_request_url: pull_url}) do
+        Repo.delete_all(from m in Message, where: m.pull_url == ^pull_url)
+    end
+
+    @doc """
+        Removes any message that are older than the specified ending time
+        Defaults to removing messages that are 30 or more days old
+    """
+    @spec destroy_older_messages!(integer, String.t) :: {integer, nil}
+    def destroy_older_messages!(ending_time \\ -30, format \\ "day") when ending_time < 0 do
+        Repo.delete_all(
+            from m in Message,
+            where: m.inserted_at <= from_now(^ending_time, ^format)
+        )
+    end
+
+    @doc """
+        Returns the UUID of a message based on the combination of pull url, message type, and slack ids
+
+        #Examples
+        iex> Plover.Slack.get_uuid("Hello", "http://google.com")
+        "6D9965489DBC280E47B4A226C5B39733"
+    """
+    @spec get_uuid(String.t, String.t) :: String.t
+    def get_uuid(message_type, url), do: message_type <> url |> to_uuid()
+
+    @doc """
+        Will find a message based on the UUID and from what time frame it was created
+
+        Default behavior will locate messages that are 24hr's or less since last created
+    """
+    def find_message(uuid, ending_time \\ -1, format \\ "day") do
+        Repo.one(
+            from m in Message,
+            where: m.inserted_at >= from_now(^ending_time, ^format),
+            where: m.uuid == ^uuid
+        )
     end
 
     @doc """
         Will submit a message to the speicifed slack channel
     """
-    def post_slack_message(channel_id, pull_url, slack_ids) do
-        [title, attachment] =
-            slack_ids
-            |> Enum.join(", ")
-            |> format_slack_message(pull_url)
-
+    def post_slack_message!(slack, github) do
+        [title, attachment] = slack_message!(slack.message_type, slack, github)
         Chat.post_message(
-            channel_id,
+            slack.channel_id,
             title,
             %{link_names: true, parse: :full, attachments: attachment}
         )
@@ -60,42 +103,45 @@ defmodule Plover.Slack do
     @doc """
         Will update an existing message on a speicifed slack channel
     """
-    def update_slack_message(channel_id, timestamp, pull_url, slack_ids) do
-        [title, attachments] =
-            slack_ids
-            |> Enum.join(", ")
-            |> format_slack_message(pull_url)
-
+    def post_slack_message!(slack, github, timestamp) do
+        [title, attachment] = slack_message!(slack.message_type, slack, github)
         Chat.update(
-            channel_id,
+            slack.channel_id,
             title,
             timestamp,
-            %{link_names: true, parse: :full, attachments: attachments}
+            %{link_names: true, parse: :full, attachments: attachment}
         )
     end
 
     @doc """
         Creates a new message
     """
-    def new_message!(channel_id, pull_url, timestamp) do
-        params = %{channel_id: channel_id, pull_url: pull_url, timestamp: timestamp}
-        changeset = %Message{} |> Message.changeset(params)
+    def new_message!(timestamp, uuid, %State{channel_id: channel_id, pull_url: url}) do
+        params    = %{channel_id: channel_id, pull_url: url, timestamp: timestamp, uuid: uuid}
+        changeset = Message.changeset(%Message{}, params)
+
         case Repo.insert_or_update(changeset) do
             {:error, changeset} ->
                 message = ErrorCommands.translate_errors(changeset.errors, join_by: " and ")
                 raise(ArgumentError, message: message)
-            {:ok, message} ->
-                message
+            message -> message
         end
     end
 
     @doc """
         Verifies if a use exists on the given slack chat
+
+        #Example
+        iex> members = [%{"name" => "john"}, %{"name" => "george"}]
+        iex> Plover.Slack.user_exists?("george", members)
+        true
     """
     def user_exists?(_, []), do: false
+
     def user_exists?(slack_name, [%{"name" => name} | members]) do
         slack_name == name || user_exists?(slack_name, members)
     end
+
     def user_exists?(user_name) do
         user_name = String.trim(user_name)
         slack_name =
@@ -104,12 +150,37 @@ defmodule Plover.Slack do
             else
                 user_name
             end
-        %{"members" => members} = Users.list
+        %{"members" => members} = Users.list # Aliased Slack.Web.Users
         user_exists?(slack_name, members)
     end
 
-    defp get_channel_id!(_, []), do: raise(KeyError, message: "COULD NOT FIND CHANNEL ID!")
-    defp get_channel_id!(channel_name, [channel | channels]) do
+    @doc """
+        Converts a list of tuples into a single string of slack users
+
+        #Example
+        iex> [{0, "george", 2}, {0, "testuser", 2}]
+        iex> |> Plover.Slack.id_to_string!()
+        "george, testuser"
+    """
+    def id_to_string!(arg) when is_list(arg) and length(arg) >= 1 do
+        arg |> Enum.map(fn r -> elem(r, 1) end) |> Enum.join(", ")
+    end
+
+    def id_to_string!(_) do
+        raise(ArgumentError, message: "Require a populated list of tuple reviewers")
+    end
+
+    @doc """
+        Returns the channel id of a list of channels
+
+        #Example
+        iex> channels = [%{"name" => "false_channel", "id" => 1}, %{"name" => "true_channel", "id" => 2}]
+        iex> Plover.Slack.get_channel_id!("true_channel", channels)
+        2
+    """
+    def get_channel_id!(_, []), do: raise(KeyError, message: "COULD NOT FIND CHANNEL ID!")
+
+    def get_channel_id!(channel_name, [channel | channels]) do
         %{"name" => name, "id" => id} = channel
         if name == channel_name do
             id
@@ -117,21 +188,59 @@ defmodule Plover.Slack do
             get_channel_id!(channel_name, channels)
         end
     end
-    defp get_channel_id!(channel_name) do
+
+    def get_channel_id!(channel_name) do
         %{"channels" => channels} = Channels.list
         get_channel_id!(channel_name, channels)
     end
 
-    defp format_slack_message(slack_ids, pull_url) do
-        text = " HEY THERE'S A PULL REQUEST FOR #{slack_ids} !"
+    @doc """
+        Formats the slack message based on the provided message type action
+    """
+    def slack_message!("pull_request", slack, _github) do
+        " HEY THERE'S A PULL REQUEST FOR #{slack.targeted_users} !"
+        |> format_slack_message("Try to review this as soon as you can!", slack.pull_url, "warning")
+    end
+
+    def slack_message!("changes_requested", slack, _github) do
+        " You've been requested to make some changes #{slack.targeted_users} "
+        |> format_slack_message("You've been requested to make some changes", slack.pull_url, "danger")
+    end
+
+    def slack_message!("partial_approval", slack, github) do
+        total_count    = Enum.count(github.reviewers)
+        approval_count = Enum.reduce(github.reviewers, 0, fn(r, acc) ->
+            if elem(r, 2) == "approved", do: acc + 1, else: acc
+        end)
+
+        percent = round((approval_count / total_count * 100))
+
+        " You're PR as been #{approval_count}/#{total_count} (#{percent}%) approved! #{slack.targeted_users}"
+        |> format_slack_message("Be patient and wait for all reviewers to complete their analysis.", slack.pull_url, "#4286f4")
+    end
+
+    def slack_message!("fully_approved", slack, _github) do
+        " You're PR has been fully approved! #{slack.targeted_users} "
+        |> format_slack_message("Merge it in if all requirements have been met!", slack.pull_url)
+    end
+
+    def slack_message!(type, slack, _github) do
+        raise(ArgumentError, message: "Do not recognize (#{type}) message type from: #{slack.pull_url}")
+    end
+
+    defp format_slack_message(title, sub_text, pull_url, color \\ "good") do
         attachment = [%{
             "title": pull_url,
             "title_link": pull_url,
-            "text": "Try to review this as soon as you can!",
-            "color": "#36a64f",
+            "text": sub_text,
+            "color": color,
             "footer": "Plover Webhook Response"
         }] |> Poison.encode!()
 
-        [text, [attachment]]
+        [title, [attachment]]
+    end
+
+    defp to_uuid(data, protocal \\ :md5) do
+        protocal |> :crypto.hash(data) |> Base.encode16()
     end
 end

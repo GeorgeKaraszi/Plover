@@ -13,6 +13,8 @@ defmodule Plover.Application do
       Envy.auto_load
       # Re-run config for the DOT env files to load envirmental variables
       "config/config.exs" |> Config.read! |> Config.persist
+
+      unless Mix.env == :test, do: :observer.start
     end
 
     import Supervisor.Spec
@@ -23,10 +25,11 @@ defmodule Plover.Application do
       supervisor(Repo, []),
       # Start the endpoint when the application starts
       supervisor(Endpoint, []),
-      supervisor(Plover.GithubStack, []),
-      supervisor(Plover.SlackStack, [])
+      supervisor(Github.Supervisor, []),
       # Start your own worker by calling: Plover.Worker.start_link(arg1, arg2, arg3)
-      # worker(Plover.Worker, [arg1, arg2, arg3]),
+      worker(Redis, [System.get_env("REDIS_URL")]),
+      worker(SlackMessenger, [System.get_env("SLACK_CHANNEL_NAME")]),
+      worker(Github, [])
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

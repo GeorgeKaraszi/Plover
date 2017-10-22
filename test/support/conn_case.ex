@@ -20,6 +20,7 @@ defmodule PloverWeb.ConnCase do
       # Import conveniences for testing with connections
       use Phoenix.ConnTest
       import PloverWeb.Router.Helpers
+      import Plover.Factory
 
       # The default endpoint for testing
       @endpoint PloverWeb.Endpoint
@@ -32,6 +33,8 @@ defmodule PloverWeb.ConnCase do
     unless tags[:async] do
       Ecto.Adapters.SQL.Sandbox.mode(Plover.Repo, {:shared, self()})
     end
+
+    on_exit(:flush_redis, fn -> Redis.destroy_all! end)
     {:ok, conn: Phoenix.ConnTest.build_conn()}
   end
 

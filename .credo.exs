@@ -107,7 +107,7 @@
         {Credo.Check.Refactor.NegatedConditionsInUnless},
         {Credo.Check.Refactor.NegatedConditionsWithElse},
         {Credo.Check.Refactor.Nesting},
-        {Credo.Check.Refactor.PipeChainStart},
+        {Credo.Check.Refactor.PipeChainStart, false},
         {Credo.Check.Refactor.UnlessWithElse},
 
         {Credo.Check.Warning.BoolOperationOnSameValues},
@@ -128,8 +128,8 @@
 
         # Controversial and experimental checks (opt-in, just remove `, false`)
         #
-        {Credo.Check.Refactor.ABCSize},
-        {Credo.Check.Refactor.AppendSingleItem, false},
+        {Credo.Check.Refactor.ABCSize, max_size: 10},
+        {Credo.Check.Refactor.AppendSingleItem},
         {Credo.Check.Refactor.VariableRebinding, false},
         {Credo.Check.Warning.MapGetUnsafePass, false},
         {Credo.Check.Consistency.MultiAliasImportRequireUse, false},

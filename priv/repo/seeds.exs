@@ -12,5 +12,6 @@
 
 if Mix.env == :dev do
     Plover.Factory.insert(:user, github_login: "GeorgeKaraszi", slack_login: "@george")
+    Plover.Factory.insert(:user, github_login: "ploverreview", slack_login: "@pr_review")
     Plover.Factory.insert(:user, github_login: "plover-reviewer-2", slack_login: "@pr_review2")
 end

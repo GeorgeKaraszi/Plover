@@ -7,7 +7,8 @@ defmodule Plover.SlackMessageFactory do
                 %Plover.Slack.Message{
                     pull_url: Internet.url,
                     timestamp: Internet.slug,
-                    channel_id: Company.name
+                    channel_id: Company.name,
+                    uuid: Internet.slug,
                 }
             end
         end
