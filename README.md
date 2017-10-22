@@ -18,6 +18,7 @@ Assign the proper key values to the `.env.dev` file
 # Project Prerequisite's
 
 * Postgres v9.6
+* Redis v4.x
 
 # Heroku Prerequisite's
 
