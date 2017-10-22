@@ -3,6 +3,15 @@ defmodule Github.State do
         Structure for what each worker will use to control their given pull request's
     """
 
+    @type t :: %__MODULE__{
+        owners: list(tuple()),
+        reviewers: list(tuple()),
+        action_history: list(String.t),
+        targeted_users: list(tuple()),
+        message_type: String.t,
+        pull_request_url: String.t
+    }
+
     @derive [Poison.Encoder]
     defstruct [
         owners: [],

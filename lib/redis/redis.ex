@@ -21,7 +21,7 @@ defmodule Redis do
         end
     end
 
-    @spec retrieve(String.t) :: {:ok, %State{} | nil}
+    @spec retrieve(String.t) :: {:ok, State.t | nil}
     def retrieve(key) do
         GenServer.call(__MODULE__, {:retrieve, key})
     end
@@ -31,7 +31,7 @@ defmodule Redis do
         GenServer.call(__MODULE__, {:get_keys, key})
     end
 
-    @spec submit(%State{}, String.t) :: %State{}
+    @spec submit(State.t, String.t) :: State.t
     def submit(state, identifier) do
         GenServer.cast(__MODULE__, {:submit, identifier, state})
         state

@@ -3,6 +3,7 @@ defmodule Plover.Factory do
     use ExMachina.Ecto, repo: Plover.Repo
     use Plover.UserFactory
     use Plover.GithubPayloadFactory
+    use Plover.GithubStateFactory
     use Plover.SlackMessageFactory
     use Plover.SlackStateFactory
 end

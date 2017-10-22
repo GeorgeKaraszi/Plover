@@ -14,12 +14,12 @@ defmodule SlackMessenger do
     {:ok, channel_name}
   end
 
-  @spec post_message(%State{}) :: :ok
+  @spec post_message(State.t) :: :ok
   def post_message(github_state) do
     GenServer.cast(__MODULE__, {:send_message, github_state})
   end
 
-  @spec destroy_messages(%State{}) :: :ok
+  @spec destroy_messages(State.t) :: :ok
   def destroy_messages(github_state) do
     GenServer.cast(__MODULE__, {:destroy_messages, github_state})
   end
@@ -32,7 +32,7 @@ defmodule SlackMessenger do
   end
 
   def handle_cast({:destroy_messages, github_state}, channel_name) do
-    Slack.destroy_messages!(channel_name, github_state)
+    Slack.destroy_messages!(github_state)
     {:noreply, channel_name}
   end
 end

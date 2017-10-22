@@ -9,6 +9,7 @@ defmodule Github.Handel do
     @doc """
        Handels the payload actions for a Github worker's request
     """
+    @spec process(Payload.t, State.t) :: State.t
     def process(payload \\ %Payload{}, state \\ %State{}) do
         payload
         |> process_request(state)
@@ -22,6 +23,7 @@ defmodule Github.Handel do
 
        Returns: new state from the response
     """
+    @spec process_request(Payload.t, State.t) :: State.t
     def process_request(%Payload{action: action} = payload, state) do
         case action do
             "submitted" ->
@@ -38,6 +40,7 @@ defmodule Github.Handel do
 
         Returns: a new state containing the pull request owner or the current state if one exists
     """
+    @spec assign_owner(State.t, String.t | nil) :: State.t
     def assign_owner(state, nil), do: state
     def assign_owner(state, pull_owner) do
        if Enum.empty?(state.owners) do
@@ -53,6 +56,7 @@ defmodule Github.Handel do
 
        Returns: New state containing the modified user state.
     """
+    @spec change_user_state(State.t, String.t, String.t) :: State.t
     def change_user_state(state, github_login, user_state) do
         user = List.keyfind(state.reviewers, github_login, 0)
 
@@ -71,6 +75,7 @@ defmodule Github.Handel do
 
        Returns: new state without designated reviewer
     """
+    @spec remove_reviewer(State.t, String.t | nil) :: State.t
     def remove_reviewer(state, nil), do: state
     def remove_reviewer(state, github_login) do
         %{state | reviewers: List.keydelete(state.reviewers, github_login, 0)}
@@ -81,6 +86,7 @@ defmodule Github.Handel do
 
        Returns: nil if exists or not registered
     """
+    @spec find_missing_login(list(String.t), String.t | nil) :: Account.User.t | nil
     def find_missing_login(_user_list, nil), do: nil
     def find_missing_login(user_list, github_login) when is_list(user_list) do
         if List.keyfind(user_list, github_login, 0) do
@@ -95,7 +101,7 @@ defmodule Github.Handel do
 
        Returns: new state with designated list of reviewers
     """
-
+    @spec assign_reviewer(State.t, String.t | nil, String.t) :: State.t
     def assign_reviewer(_state, nil, _user_state), do: []
     def assign_reviewer(state, github_login, user_state) do
         reviewer = state.reviewers
@@ -112,6 +118,7 @@ defmodule Github.Handel do
 
        Returns: new state with a newly assigned message type and targeted audience
     """
+    @spec process_message_type(State.t, String.t, String.t | nil) :: State.t
     def process_message_type(state, message_action, nil) do
         message_type = message_action_inspector(state.reviewers, message_action)
         %{state | message_type: message_type, targeted_users: state.reviewers}
@@ -126,6 +133,7 @@ defmodule Github.Handel do
         Records the history of the pull request, for each event that was occured during
         the life span of the project
     """
+    @spec record_action(State.t) :: State.t
     def record_action(state) do
         %{state | action_history: [state.message_type | state.action_history]}
     end
@@ -143,6 +151,7 @@ defmodule Github.Handel do
        iex> Github.Handel.reviewer("approved")
        [{"georgekaraszi", "@george", "approved"}]
     """
+    @spec reviewer(String.t, String.t) :: list(tuple()) | list()
     def reviewer(nil, _user_state), do: []
     def reviewer(user, user_state) do
         [{user.github_login, user.slack_login, user_state}]

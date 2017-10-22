@@ -7,6 +7,7 @@ defmodule Plover.Slack.SlackTest do
   doctest Plover.Slack
   alias Plover.Slack.Message
   alias Github.State
+  use Timex
   import Mock
 
 
@@ -124,4 +125,16 @@ defmodule Plover.Slack.SlackTest do
         expect_to_raise(ArgumentError, action)
     end
   end
+
+    describe "destroy_older_messages!" do
+        test "It should remove old messages from the system" do
+            time = Timex.now |> Timex.shift(days: -40)
+            insert(:slack_message)
+            insert(:slack_message, inserted_at: time)
+
+            subject = fn -> Message.count end
+            action  = fn -> Plover.Slack.destroy_older_messages! end
+            expect_to_change(subject, action, from: 2, to: 1)
+        end
+    end
 end

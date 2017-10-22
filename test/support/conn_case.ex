@@ -20,6 +20,7 @@ defmodule PloverWeb.ConnCase do
       # Import conveniences for testing with connections
       use Phoenix.ConnTest
       import PloverWeb.Router.Helpers
+      import Plover.Factory
 
       # The default endpoint for testing
       @endpoint PloverWeb.Endpoint

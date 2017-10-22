@@ -58,6 +58,7 @@ defmodule Plover.Mixfile do
       {:ex_machina, "~> 2.0", only: [:dev, :test]},
       {:faker, "~> 0.8", only: [:dev, :test]},
       {:envy, "~> 1.1.1", only: [:dev, :test]},
+      {:timex, "~> 3.1", only: [:test]},
       {:mock, "~> 0.3", only: :test},
       {:credo, "~> 0.8", only: [:dev, :test], runtime: false}
     ]

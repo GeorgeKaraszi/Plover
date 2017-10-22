@@ -5,7 +5,7 @@ defmodule Github.Worker do
     alias Github.{Handel, State}
     alias PayloadParser.Payload
 
-    @spec start_link(%State{}, Keyword.t()) :: GenServer.on_start()
+    @spec start_link(State.t, Keyword.t()) :: GenServer.on_start()
     def start_link(state, opts) do
         state = %{state | pull_request_url: Atom.to_string(opts[:name])}
         GenServer.start_link(__MODULE__, state, opts)
@@ -31,7 +31,7 @@ defmodule Github.Worker do
     @doc """
         Request current state of the Pull Request
     """
-    @spec fetch_state(GenServer.server()) :: {:ok, %State{}}
+    @spec fetch_state(GenServer.server()) :: {:ok, State.t}
     def fetch_state(pid) do
         GenServer.call(pid, :fetch_state)
     end

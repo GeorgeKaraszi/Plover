@@ -1,6 +1,23 @@
 defmodule PayloadParser.Payload do
     @moduledoc false
 
+    @type t :: %__MODULE__{
+        action: String.t,
+        organization_name: String.t,
+        organization_url: String.t,
+        project_name: String.t,
+        project_url: String.t,
+        pull_name: String.t,
+        pull_url: String.t,
+        pull_status: String.t,
+        review_state: String.t,
+        reviewer: String.t,
+        reviewers: list(String.t),
+        requested_reviewer: String.t,
+        has_been_merged: boolean(),
+        has_been_closed: boolean()
+    }
+
     defstruct action: nil,
               organization_name: nil,
               organization_url: nil,

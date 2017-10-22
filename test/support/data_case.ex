@@ -37,7 +37,6 @@ defmodule Plover.DataCase do
     end
 
     on_exit(:flush_redis, fn -> Redis.destroy_all! end)
-
     :ok
   end
 

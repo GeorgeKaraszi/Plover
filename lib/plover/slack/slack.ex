@@ -24,7 +24,8 @@ defmodule Plover.Slack do
           Returns
           - The message changeset
     """
-    def post_to_slack!(channel_name, %Github.State{} = github) do
+    @spec post_to_slack!(String.t, Github.State.t) :: {:ok, struct}
+    def post_to_slack!(channel_name, github) do
         uuid  =  get_uuid(github.message_type, github.pull_request_url)
         slack = %State{
                 message_type: github.message_type,
@@ -47,9 +48,21 @@ defmodule Plover.Slack do
     @doc """
         Removes any message that is related to a given pull request URL
     """
-    @spec destroy_messages!(String.t, %Github.State{}) :: {integer, nil}
-    def destroy_messages!(channel_name, %Github.State{pull_request_url: pull_url}) do
+    @spec destroy_messages!(Github.State.t) :: {integer, nil}
+    def destroy_messages!(%Github.State{pull_request_url: pull_url}) do
         Repo.delete_all(from m in Message, where: m.pull_url == ^pull_url)
+    end
+
+    @doc """
+        Removes any message that are older than the specified ending time
+        Defaults to removing messages that are 30 or more days old
+    """
+    @spec destroy_older_messages!(integer, String.t) :: {integer, nil}
+    def destroy_older_messages!(ending_time \\ -30, format \\ "day") when ending_time < 0 do
+        Repo.delete_all(
+            from m in Message,
+            where: m.inserted_at <= from_now(^ending_time, ^format)
+        )
     end
 
     @doc """
@@ -59,6 +72,7 @@ defmodule Plover.Slack do
         iex> Plover.Slack.get_uuid("Hello", "http://google.com")
         "6D9965489DBC280E47B4A226C5B39733"
     """
+    @spec get_uuid(String.t, String.t) :: String.t
     def get_uuid(message_type, url), do: message_type <> url |> to_uuid()
 
     @doc """
@@ -66,7 +80,7 @@ defmodule Plover.Slack do
 
         Default behavior will locate messages that are 24hr's or less since last created
     """
-    def find_message(uuid, ending_time \\ "-1", format \\ "day") do
+    def find_message(uuid, ending_time \\ -1, format \\ "day") do
         Repo.one(
             from m in Message,
             where: m.inserted_at >= from_now(^ending_time, ^format),

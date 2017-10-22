@@ -15,7 +15,7 @@ defmodule Github do
       @doc """
         Find's the process for a given payload
       """
-      @spec find_process(%Payload{}) :: {:error, {atom(), String.t}} | GenServer.server()
+      @spec find_process(Payload.t) :: {:error, {atom(), String.t}} | GenServer.server()
       def find_process(payload) do
         GenServer.call(__MODULE__, {:retrieve, payload})
       end

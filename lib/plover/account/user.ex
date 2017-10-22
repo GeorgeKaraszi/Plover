@@ -6,6 +6,8 @@ defmodule Plover.Account.User do
     alias Plover.Account.User
     alias Plover.Slack
 
+    @type t :: %__MODULE__{}
+
     schema "users" do
         field :first_name, :string
         field :last_name, :string

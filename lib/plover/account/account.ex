@@ -5,10 +5,12 @@ defmodule Plover.Account do
   use Plover, :context
   alias Plover.Account.User
 
+  @spec all_by_github_login(list(String.t)) :: list(User.t)
   def all_by_github_login(github_logins) do
     Repo.all(from u in User, where: u.github_login in ^github_logins)
   end
 
+  @spec all_by_github_login(String.t) :: User.t | nil
   def find_by_github(github_login) do
     User.find_by(github_login: github_login)
   end
@@ -16,6 +18,7 @@ defmodule Plover.Account do
   @doc """
       Returns a list of slack id's from a list of users
   """
+  @spec pluck_slack_logins(list(String.t) | String.t) :: list(String.t) | String.t | nil
   def pluck_slack_logins(nil), do: nil
   def pluck_slack_logins(users) when is_list(users) do
       Enum.map(users, fn(user) -> user.slack_login end)
@@ -25,6 +28,7 @@ defmodule Plover.Account do
   @doc """
       Returns a changeset for the givn user
   """
+  @spec changeset(struct) :: User.t
   def changeset(user) do
     User.changeset(user)
   end
